@@ -33,6 +33,6 @@ check: dump.vcd
 	
 clean:
 	-killall gtkwave
-	rm *.blif *.text *.bin dsn dump.vcd
+	-rm *.blif *.text *.bin dsn dump.vcd
 	
 
