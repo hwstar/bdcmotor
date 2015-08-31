@@ -18,6 +18,8 @@
 
 // A parallel input shift register clocked on falling edge
 
+`timescale 10ns/1ns
+
 module tbshftout(
   output sout,
   input [7:0] outbyte,
@@ -170,8 +172,8 @@ module test;
     integer i;
     begin
       for(i = 0; i < 8; i = i + 1) begin
-      	#8 sclk = 0;
-      	#8 sclk= 1;
+      	#16 sclk = 0;
+      	#16 sclk= 1;
       end
     end
   endtask
@@ -180,16 +182,16 @@ module test;
   
   task spiwrite;
     begin
-    	#2 ss = 1;
-    	#2 ss = 1;
+    	#40 ss = 1;
+    	#40 ss = 1;
     	begin
         outbyte = 8'h55;
       	spiclkburst;
-        #2 outbyte = 8'hAA;
+        #40 outbyte = 8'hAA;
         spiclkburst;
     	end
-    	#2 ss = 1;
-    	#2 ss = 0;
+    	#40 ss = 1;
+    	#40 ss = 0;
     end  
   endtask
 
@@ -197,16 +199,16 @@ module test;
   
   task spiread;
     begin
-    	#2 ss = 1;
-    	#2 ss = 1;
+    	#40 ss = 1;
+    	#40 ss = 1;
     	begin
         outbyte = 8'h80;
       	spiclkburst;
-        #2 outbyte = 8'h00;
+        #40 outbyte = 8'h00;
         spiclkburst;
     	end
-    	#2 ss = 1;
-    	#2 ss = 0;
+    	#40 ss = 1;
+    	#40 ss = 0;
     end  
   endtask
   
@@ -221,11 +223,11 @@ module test;
  
     // Clear any pending SPI transaction
     outbyte = 0;
-    #2
+    #40
     spiclkburst;
-    #2
+    #40
     spiclkburst;
-    #10
+    #100
     
     
     spiwrite;
@@ -234,10 +236,10 @@ module test;
     spiread;
 
     
-    #960 $finish; 
+    #9600 $finish; 
   end
  
-  always #2 clk = ~clk;
+  always #4 clk = ~clk;
 
 endmodule
 

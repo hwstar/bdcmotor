@@ -2,7 +2,7 @@
 PROJECT := system
 DEVICE := 1k
 
-.PHONY:	clean, syn, check
+.PHONY:	clean, wave, check
 
 all:	$(PROJECT).bin
 
@@ -25,7 +25,7 @@ dsn: testbench.v $(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
 dump.vcd: dsn
 	vvp dsn
 
-sim: dump.vcd
+wave: dump.vcd
 	gtkwave dump.vcd &
 	
 check: dump.vcd
