@@ -2,9 +2,9 @@
 PROJECT := system
 DEVICE := 1k
 
-.PHONY:	clean, wave, check
+.PHONY:	clean, wave, check, route
 
-all:	$(PROJECT).bin
+all:	check
 
 # Synthesis
 $(PROJECT).blif:	$(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
@@ -25,6 +25,8 @@ dsn: testbench.v $(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
 dump.vcd: dsn
 	vvp dsn
 
+route: $(PROJECT).bin
+	
 wave: dump.vcd
 	gtkwave dump.vcd &
 	

@@ -13,8 +13,43 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
+ *
+ *****  REGISTER MAP *****
  * 
+ *
+ *** Address 0	:	Tach Low Byte (R), PWM Register (W) ***
+ *
+ * Read
+ * 
+ * Least significant byte of tach register. Reading automatically
+ * latches the high byte for future access.
+ *
+ * Write
+ *
+ * PWM value. 8'h80 correleates to a 50% duty cycle. The motor would
+ * be off in this case.
+ *
+ *** Address 1	:	Tach High Byte(R) ***
+ *
+ * Most significant byte of tach register. This has to be latched by
+ * reading the low byte first.
+ *
+ *
+ *** Address 2	:	Config Register (W) ***
+ *
+ * Bit 7	:	Reserved
+ * Bit 6	:	Reserved  
+ * Bit 5	:	invert tach	
+ * Bit 4	:	invert pwm
+ * Bit 3    :   Tach filter divisor msb
+ * Bit 2    :   Tach filter divisor lsb
+ * Bit 1	:	PWM clock divisor msb
+ * Bit 0	:	PWM clock divisor lsb
+ *
  */
+ 
+ 
+ 
 
 /*
 * This module detects a negative going edge
@@ -99,13 +134,13 @@ module decoder(
 	reg regdecr0 = 0;
 	reg regdecw0 = 0;
 	reg regdecw2 = 0;
-	reg regdecw3 = 0;
+	reg regdecwf = 0;
 	reg [7:0] rddatareg;
   
 	assign countlread = regdecr0;
 	assign pwmld = regdecw0;
 	assign cfgld = regdecw2;
-	assign ctrlld = regdecw3;
+	assign ctrlld = regdecwf;
   
 	assign rddata = rddatareg;
   
@@ -115,7 +150,7 @@ module decoder(
 		regdecr0 <= 0;
 		regdecw0 <= 0;
 		regdecw2 <= 0;
-		regdecw3 <= 0;
+		regdecwf <= 0;
 		case(addr)
 			// Tach low byte and PWM
 			4'h0: begin
@@ -127,21 +162,22 @@ module decoder(
 			4'h1: begin
 				rddatareg <= counthfrozen;
 			end
+			    
+			// Configuration
+			4'h2:
+				regdecw2 <= we;
       
 			// Unimplemented decodes
-			4'h2, 4'h3, 4'h4, 4'h5, 4'h6, 4'h7,
-			4'h8, 4'h9, 4'ha, 4'hb, 4'hc, 4'hd: begin
+			4'h3, 4'h4, 4'h5, 4'h6, 4'h7, 4'h8,
+			4'h9, 4'ha, 4'hb, 4'hc, 4'hd, 4'he: begin
 				rddatareg <= 8'h00;
 			end
-      
-			// Configuration
-			4'he:
-				regdecw2 <= we;
+ 
       
       
 			// Control
 			4'hf:
-				regdecw3 <= we;
+				regdecwf <= we;
       
 			// BoGuS
 			default: begin
@@ -149,7 +185,7 @@ module decoder(
 				regdecr0 <= 1'bx;
 				regdecw0 <= 1'bx;
 				regdecw2 <= 1'bx;
-				regdecw3 <= 1'bx;
+				regdecwf <= 1'bx;
 			end
 		endcase
 	end
@@ -214,6 +250,7 @@ module system(
 	wire highce;
 	wire pwmld;
 	wire cfgld;
+	wire cfgce;
 	wire ctrlld;
 	wire [3:0] addr;
 	wire [7:0] wrtdata;
@@ -221,17 +258,16 @@ module system(
 	wire [7:0] counthfrozen;
 	wire [7:0] countl;
 	wire [7:0] counth;
+	wire [7:0] configreg;
   
  
 	// Place keepers
-	reg motorenareg = 1;
+	reg motorenaint = 1;
 	reg filterce = 1;
-	reg invphase = 0;
-	reg invertpwm = 0;
 	reg pwmcntce = 1;
   
  
-	assign motorena = motorenareg;
+	assign motorena = motorenaint;
   
   
 	negedgedet ned0(
@@ -258,21 +294,28 @@ module system(
 		.freeze(freeze),
 		.highce(highce));
   
-	reg8 counthrreg(
+	reg8 counthrreg0(
 		.clk(clk),
 		.ce(highce),
 		.in(counth),
 		.out(counthfrozen));
+
+
+	reg8 configreg0(
+		.clk(clk),
+		.ce(cfgce),
+		.in(wrtdata),
+		.out(configreg));
   
 	bdcmotorchannel bdcm0(
 		.clk(clk),
 		.filterce(filterce),
-		.invphase(invphase),
+		.invphase(configreg[4]),
 		.freeze(freeze),
 		.pwmcntce(pwmcntce),
 		.pwmldce(pwmld),
-		.invertpwm(invertpwm),
-		.enablepwm(motorenareg),
+		.invertpwm(configreg[5]),
+		.enablepwm(motorenaint),
 		.currentlimit(currentlimit),
 		.tach(tach),
 		.wrtdata(wrtdata),
@@ -292,6 +335,10 @@ module system(
 		.spien(ss),
 		.spidin(mosi),
 		.rddata(rddata));
+		
+		// Config reg can only be updated when motor is disabled
+		assign cfgce = cfgld & ~motorenaint;
+		
 endmodule
 
   
