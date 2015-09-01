@@ -14,38 +14,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  *
- *****  REGISTER MAP *****
- * 
- *
- *** Address 0	:	Tach Low Byte (R), PWM Register (W) ***
- *
- * Read
- * 
- * Least significant byte of tach register. Reading automatically
- * latches the high byte for future access.
- *
- * Write
- *
- * PWM value. 8'h80 correleates to a 50% duty cycle. The motor would
- * be off in this case.
- *
- *** Address 1	:	Tach High Byte(R) ***
- *
- * Most significant byte of tach register. This has to be latched by
- * reading the low byte first.
- *
- *
- *** Address 2	:	Config Register (W) ***
- *
- * Bit 7	:	Reserved
- * Bit 6	:	Reserved  
- * Bit 5	:	invert tach	
- * Bit 4	:	invert pwm
- * Bit 3    :   Tach filter divisor msb
- * Bit 2    :   Tach filter divisor lsb
- * Bit 1	:	PWM clock divisor msb
- * Bit 0	:	PWM clock divisor lsb
- *
  */
  
  
