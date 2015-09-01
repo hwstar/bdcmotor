@@ -4,9 +4,12 @@ set_io sclk 112
 set_io mosi 113
 set_io miso 114
 set_io ss 115
-set_io pwm[0] 78
-set_io pwm[1] 79
-set_io motorena 80
-set_io tach[0] 81
-set_io tach[1] 87
-set_io currentlimit 88
+set_io wdogdis 117
+set_io pwm[0] 62
+set_io pwm[1] 61
+set_io motorena 60
+set_io tach[0] 56
+set_io tach[1] 48
+set_io currentlimit 47
+set_io tst 44
+

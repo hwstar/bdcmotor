@@ -129,11 +129,13 @@ module decoder(
 	output countlread,
 	output pwmld,
 	output cfgld,
-	output ctrlld);
+	output ctrlld,
+	output wdogdivld);
   
 	reg regdecr0 = 0;
 	reg regdecw0 = 0;
 	reg regdecw2 = 0;
+	reg regdecwe = 0;
 	reg regdecwf = 0;
 	reg [7:0] rddatareg;
   
@@ -141,6 +143,7 @@ module decoder(
 	assign pwmld = regdecw0;
 	assign cfgld = regdecw2;
 	assign ctrlld = regdecwf;
+	assign wdogdivld = regdecwe;
   
 	assign rddata = rddatareg;
   
@@ -150,6 +153,7 @@ module decoder(
 		regdecr0 <= 0;
 		regdecw0 <= 0;
 		regdecw2 <= 0;
+		regdecwe <= 0;
 		regdecwf <= 0;
 		case(addr)
 			// Tach low byte and PWM
@@ -169,12 +173,14 @@ module decoder(
       
 			// Unimplemented decodes
 			4'h3, 4'h4, 4'h5, 4'h6, 4'h7, 4'h8,
-			4'h9, 4'ha, 4'hb, 4'hc, 4'hd, 4'he: begin
+			4'h9, 4'ha, 4'hb, 4'hc, 4'hd: begin
 				rddatareg <= 8'h00;
 			end
  
-      
-      
+			// Watchdog divisor
+			4'he:
+				regdecwe <= we;
+			
 			// Control
 			4'hf:
 				regdecwf <= we;
@@ -192,27 +198,6 @@ module decoder(
 endmodule
 
 
-/*
-* 8 bit register
-*/
-
-module reg8(
-	input clk,
-	input ce,
-	input [7:0] in,
-	output [7:0] out);
-  
-	reg [8:0] register = 8'h00;
-  
-	assign out = register;
-  
-	always @(posedge clk) begin
-		if(ce) begin
-			register = in;
-		end
-	end
-endmodule
-  
 
 /*
 * Main interface to all underlying logic modules
@@ -237,6 +222,10 @@ module system(
 	input mosi,
 	// Current limit detect
 	input currentlimit,
+	// Test input
+	input tst,
+	// Watchdog disable
+	input wdogdis,
 	// Tachometer phases
 	input [1:0] tach); 
   
@@ -250,8 +239,11 @@ module system(
 	wire highce;
 	wire pwmld;
 	wire cfgld;
-	wire cfgce;
 	wire ctrlld;
+	wire wdogdivld;
+	wire invertpwm;
+	wire invphase;
+	wire motorenaint;
 	wire [3:0] addr;
 	wire [7:0] wrtdata;
 	wire [7:0] rddata;
@@ -260,13 +252,7 @@ module system(
 	wire [7:0] counth;
 	wire [7:0] configreg;
   
- 
-	// Place keepers
-	reg motorenaint = 1;
-	reg filterce = 1;
-	reg pwmcntce = 1;
-  
- 
+
 	assign motorena = motorenaint;
   
   
@@ -285,7 +271,8 @@ module system(
 		.countlread(countlread),
 		.pwmld(pwmld),
 		.cfgld(cfgld),
-		.ctrlld(ctrlld));
+		.ctrlld(ctrlld),
+		.wdogdivld(wdogdivld));
     
   
 	freezer frz0(
@@ -300,21 +287,29 @@ module system(
 		.in(counth),
 		.out(counthfrozen));
 
-
-	reg8 configreg0(
+	control ctrl0(
 		.clk(clk),
-		.ce(cfgce),
-		.in(wrtdata),
-		.out(configreg));
-  
+		.cfgld(cfgld),
+		.ctrlld(ctrlld),
+		.wdogdivld(wdogdivld),
+		.tst(tst),
+		.wdogdis(wdogdis),
+		.wrtdata(wrtdata),
+		.pwmcntce(pwmcntce),
+		.filterce(filterce),
+		.invertpwm(invertpwm),
+		.invphase(invphase),
+		.motorenaint(motorenaint));
+		
+		 
 	bdcmotorchannel bdcm0(
 		.clk(clk),
 		.filterce(filterce),
-		.invphase(configreg[4]),
+		.invphase(invphase),
 		.freeze(freeze),
 		.pwmcntce(pwmcntce),
 		.pwmldce(pwmld),
-		.invertpwm(configreg[5]),
+		.invertpwm(invertpwm),
 		.enablepwm(motorenaint),
 		.currentlimit(currentlimit),
 		.tach(tach),
@@ -335,9 +330,7 @@ module system(
 		.spien(ss),
 		.spidin(mosi),
 		.rddata(rddata));
-		
-		// Config reg can only be updated when motor is disabled
-		assign cfgce = cfgld & ~motorenaint;
+
 		
 endmodule
 

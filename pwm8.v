@@ -25,9 +25,16 @@
 //
 
 
-//`define WITH_DEADTIME			// Future deadtime support (not implemented yet)
+//`define WITH_DEADTIME			// Deadtime support 
 
-// PWM counter
+// PWM minimum and maximum clip values (only meaningful if WIYH_DEADTIME isn't defined)
+
+`define PWM_MIN 3
+`define PWM_MAX 251
+
+/*
+* PWM counter
+*/
 
 module pwmcounter(
   output [7:0] pwmcount,
@@ -54,7 +61,7 @@ module pwmregister(
   input pwmldce,
   input [7:0] wrtdata);
   
-  reg [7:0] pwmreg = 8'h80; // Set to 50% duty cycle which will turn the motor off.
+  reg [7:0] pwmreg = 8'h00;
   
   assign pwmval = pwmreg;
   
@@ -76,26 +83,93 @@ module pwmod(
   input [7:0] pwmval);
   
   reg pwmseo = 0;
+  reg [7:0] pwmval_clipped;
   
   assign pwmseout = pwmseo;
-  
+ 
+  // PWM generator	
+		 
   always@(posedge clk) begin
-    if(pwmval == 8'b00) begin
-      pwmseo = 0;
-    end
-    else begin
-      if(pwmcount == 8'b00) begin
-        pwmseo = 1;
-      end
-      else begin
-        if((currentlimit == 1) || (pwmcount == pwmval)) begin
-          pwmseo = 0;
-        end
-      end
-    end  
+	if(pwmcount == 8'hff) begin
+		pwmseo = 1;
+	end
+	else begin
+		if((currentlimit == 1) || (pwmcount == pwmval_clipped)) begin
+			pwmseo = 0;
+		end
+	end
   end  
+  
+  `ifndef WITH_DEADTIME 
+  // If using a bootstrapped MOSFET driver,
+  // clip PWM at minimum and maximum values
+  // This makes sure the MOSFET driver never sees
+  // a DC level on the PWM output so that the
+  // bootstrap circuit works correctly.
+  
+  always @(*) begin
+	if(pwmval < `PWM_MIN)
+		pwmval_clipped <= `PWM_MIN;
+	else if(pwmval > `PWM_MAX)
+		pwmval_clipped <= `PWM_MAX;
+	else
+		pwmval_clipped <= pwmval;
+	end
+  `else
+  // If using deadtime, the above is not necessary
+  always @(*) begin
+	pwmval_clipped <= pwmval;
+  end
+  `endif
+  
 endmodule
 
+/*
+* This module makes complementary pwm signals from a single input
+* with or without deadtime
+*/
+
+module deadtime(
+	input clk,
+	input pwmin,
+	output [1:0] pwmout);
+	
+	reg [1:0] pwmoutreg;
+	
+	`ifndef WITH_DEADTIME
+	always @(*) begin
+	    // No deadtime
+		pwmoutreg[0] = pwmin;
+		pwmoutreg[1] = ~pwmin;
+	end
+	`else
+	// Deadtime
+	reg [2:0] counter = 0;
+	reg pwmlastin = 0;
+	always @(posedge clk) begin
+		if(counter != 7)
+			counter <= counter + 1;
+		else if(pwmin != pwmlastin) begin
+			counter <= 0;
+			pwmlastin <= pwmin;
+		end
+	end
+	
+	always @(*) begin
+		if(counter != 7) begin
+			pwmoutreg[0] = 0;
+			pwmoutreg[1] = 0;
+		end
+		else begin
+			pwmoutreg[0] = pwmlastin;
+			pwmoutreg[1] = ~pwmlastin;
+		end
+	end	
+	`endif
+	
+	assign pwmout = pwmoutreg;
+endmodule
+	
 
 
 // Top level module name
@@ -137,13 +211,12 @@ module pwm8(
     .pwmseout(pwmseout));
   
   
+  deadtime deadt0(
+	.clk(clk),
+	.pwmin(pwmcorrseout),
+	.pwmout(pwmout));
+	
   assign pwmcorrseout = (pwmseout ^ invertpwm);
-  
-  // No deadtime version
-  `ifndef WITH_DEADTIME
-  assign pwmout[0] = (pwmcorrseout & enablepwm);
-  assign pwmout[1] = (~pwmcorrseout & enablepwm);
-  `endif
-  
-  
+
+
 endmodule

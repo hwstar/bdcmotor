@@ -51,7 +51,7 @@ module digitalfilter(output out, input clk, input ce, input in);
     if(~taps[2] & ~taps[3] & ~taps[4] & ~taps[5])
       result <= 0;
   end
-  
+
  
   
 endmodule
@@ -260,3 +260,4 @@ module tachcounter(
     .out(filttach[1]));
   
 endmodule   
+

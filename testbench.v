@@ -107,12 +107,14 @@ endmodule
 
 // Main test module        
   
-module test;
+module testbench;
   
   reg sclk;
   reg ss;
   reg clk;
   reg currentlimit;
+  reg tst;
+  reg wdogdis;
   reg [7:0] outbyte;
   reg [1:0] tach;
  
@@ -155,6 +157,8 @@ module test;
     .sclk(sclk),
     .ss(ss),
     .mosi(mosi),
+    .tst(tst),
+    .wdogdis(wdogdis),
     .currentlimit(currentlimit),
     .tach(tach),
     .miso(miso),
@@ -180,14 +184,14 @@ module test;
   
   // Select the dut, and send a write transaction
   
-  task spiwrite;
+  task spiwrite([3:0] addr, [7:0] data);
     begin
     	#40 ss = 1;
     	#40 ss = 1;
     	begin
-        outbyte = 8'h55;
+    	outbyte = {1'b0, addr, 3'b0};
       	spiclkburst;
-        #40 outbyte = 8'hAA;
+        #40 outbyte = data;
         spiclkburst;
     	end
     	#40 ss = 1;
@@ -197,12 +201,12 @@ module test;
 
     // Select the dut, and send a read transaction
   
-  task spiread;
+  task spiread([3:0] addr);
     begin
     	#40 ss = 1;
     	#40 ss = 1;
     	begin
-        outbyte = 8'h80;
+        outbyte = {1'b1, addr, 3'b0};
       	spiclkburst;
         #40 outbyte = 8'h00;
         spiclkburst;
@@ -214,11 +218,13 @@ module test;
   
   
   initial begin
-    $dumpvars(0, test);
+    $dumpvars(0, testbench);
     clk = 0;
     sclk = 1;
     ss = 0;
     currentlimit = 0;
+    tst = 1;
+    wdogdis = 0;
     tach = 2'b00;
  
     // Clear any pending SPI transaction
@@ -229,14 +235,20 @@ module test;
     spiclkburst;
     #100
     
+   
+    // Write config register
+    spiwrite(4'h2, 8'h0); 
     
-    spiwrite;
-    spiwrite;
     
-    spiread;
+    
+    // Write pwm register
+    spiwrite(4'h0, 8'h80);
+   
+    
+    spiread(4'h0);
 
     
-    #9600 $finish; 
+    #960000 $finish; 
   end
  
   always #4 clk = ~clk;

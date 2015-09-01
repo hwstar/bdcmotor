@@ -2,13 +2,15 @@
 PROJECT := system
 DEVICE := 1k
 
+SOURCES = $(PROJECT).v spi.v bdcmotorchannel.v control.v tachcounter.v pwm8.v
+
 .PHONY:	clean, wave, check, route
 
 all:	check
 
 # Synthesis
-$(PROJECT).blif:	$(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
-	yosys -p "synth_ice40 -blif $(PROJECT).blif" $(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
+$(PROJECT).blif:	$(SOURCES)
+	yosys -p "synth_ice40 -blif $(PROJECT).blif" $(SOURCES)
 
 # Place and route	
 $(PROJECT).text:	$(PROJECT).blif $(PROJECT).pcf
@@ -18,9 +20,9 @@ $(PROJECT).text:	$(PROJECT).blif $(PROJECT).pcf
 $(PROJECT).bin:	$(PROJECT).text
 	icepack $(PROJECT).text $(PROJECT).bin
 
-dsn: testbench.v $(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
+dsn: testbench.v $(SOURCES)
 	-killall gtkwave
-	iverilog -o dsn testbench.v $(PROJECT).v spi.v bdcmotorchannel.v tachcounter.v pwm8.v
+	iverilog -o dsn testbench.v $(SOURCES)
 	
 dump.vcd: dsn
 	vvp dsn
