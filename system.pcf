@@ -12,4 +12,5 @@ set_io tach[0] 56
 set_io tach[1] 48
 set_io currentlimit 47
 set_io tst 44
+set_io spioe 45
 

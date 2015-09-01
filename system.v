@@ -64,7 +64,9 @@ module negedgedet(
 	output out);
   
 	reg outreg;
-	reg [3:0] sr = 4'b0000;
+	reg [3:0] sr;
+  
+	initial sr = 4'b0000;
   
 	assign out = outreg;
   
@@ -132,12 +134,18 @@ module decoder(
 	output ctrlld,
 	output wdogdivld);
   
-	reg regdecr0 = 0;
-	reg regdecw0 = 0;
-	reg regdecw2 = 0;
-	reg regdecwe = 0;
-	reg regdecwf = 0;
+	reg regdecr0;
+	reg regdecw0;
+	reg regdecw2;
+	reg regdecwe;
+	reg regdecwf;
 	reg [7:0] rddatareg;
+	
+	initial regdecr0 = 0;
+	initial regdecw0 = 0;
+	initial regdecw2 = 0;
+	initial regdecwe = 0;
+	initial regdecwf = 0;
   
 	assign countlread = regdecr0;
 	assign pwmld = regdecw0;
@@ -212,6 +220,8 @@ module system(
 	output [1:0] pwm,
 	// motor enable
 	output motorena,
+	// spi output enable
+	output spioe,
 	// System clock
 	input clk,
 	// Slave Select (SS)
@@ -233,7 +243,6 @@ module system(
 	wire rdt;
 	wire wrt;
 	wire we;
-	wire spioe;
 	wire countlread;
 	wire freeze;
 	wire highce;
@@ -254,6 +263,8 @@ module system(
   
 
 	assign motorena = motorenaint;
+	
+	
   
   
 	negedgedet ned0(

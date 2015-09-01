@@ -157,6 +157,7 @@ module testbench;
     .sclk(sclk),
     .ss(ss),
     .mosi(mosi),
+    .spioe(spioe),
     .tst(tst),
     .wdogdis(wdogdis),
     .currentlimit(currentlimit),
@@ -242,7 +243,7 @@ module testbench;
     
     
     // Write pwm register
-    spiwrite(4'h0, 8'h80);
+    //spiwrite(4'h0, 8'h80);
    
     
     spiread(4'h0);

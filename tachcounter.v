@@ -29,8 +29,11 @@
 
 module digitalfilter(output out, input clk, input ce, input in);
   
-  reg [5:0] taps = 6'b000000;
-  reg result = 0;
+  reg [5:0] taps;
+  reg result;
+  
+  initial taps = 6'b000000;
+  initial result = 0;
   
   assign out = result;
   
@@ -84,12 +87,16 @@ module graycode2(
   input freeze,
   input [1:0] tach);
   
-  reg [1:0] last = 0;
-  reg u = 0;
-  reg d = 0;
+  reg [1:0] last;
+  reg u;
+  reg d;
   
   
   wire [3:0] encodedstate; 
+  
+  initial last = 0;
+  initial u = 0;
+  initial d = 0;
   
   assign encodedstate = {tach, last};
   assign up = u;
@@ -153,7 +160,9 @@ module udcounter16(
   input up,
   input down);
   
-  reg [15:0] result = 16'h0000;
+  reg [15:0] result;
+  
+  initial result = 16'h0000;
   
   assign counter = result;
   

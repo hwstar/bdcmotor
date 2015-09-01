@@ -27,7 +27,9 @@ module reg8(
 	input [7:0] in,
 	output [7:0] out);
   
-	reg [8:0] register = 8'h00;
+	reg [8:0] register;
+	
+	initial register = 8'h00;
   
 	assign out = register;
   
@@ -57,7 +59,9 @@ module divby1248(
 	
 	reg ceoutmux;
 	
-	reg [2:0] counter = 0;
+	reg [2:0] counter;
+	
+	initial counter = 0;
 	
 	assign ceout = ceoutmux;
 	
@@ -91,9 +95,13 @@ module fixeddivby64(
 	input cein,
 	output ceout);
 	
-	reg ceoutreg = 0;
-	reg ceoutregs = 0;
-	reg [5:0] counter = 0;
+	reg ceoutreg;
+	reg ceoutregs;
+	reg [5:0] counter;
+	
+	initial ceoutreg = 0;
+	initial ceoutregs = 0;
+	initial counter = 0;
 	
 	assign ceout = ceoutregs;
 	
@@ -122,9 +130,13 @@ module fixeddivby256(
 	input cein,
 	output ceout);
 	
-	reg ceoutreg = 0;
-	reg ceoutregs = 0;
-	reg [7:0] counter = 0;
+	reg ceoutreg;
+	reg ceoutregs;
+	reg [7:0] counter;
+	
+	initial ceoutreg = 0;
+	initial ceoutregs = 0;
+	initial counter = 0;
 	
 	assign ceout = ceoutregs;
 	
@@ -160,10 +172,15 @@ module wdtimer(
 	input [7:0] wdogdivreg,
 	output wdtripce);
 	
-	reg [7:0] counter = 0;
-	reg wdtripcesreg = 0;
-	reg wdtripcereg = 0;
-	reg wdogdisreg = 0;
+	reg [7:0] counter;
+	reg wdtripcesreg;
+	reg wdtripcereg;
+	reg wdogdisreg;
+	
+	initial counter = 0;
+	initial wdtripcesreg = 0;
+	initial wdtripcereg = 0;
+	initial wdogdisreg = 0;
 	
 	assign wdtripce = wdtripcesreg;
 	
@@ -203,10 +220,14 @@ module wdregister(
 	output motorenaint,
 	output [7:0] controlrddata);
 	
-	reg motorenaintreg = 0;
-	reg wdtrip = 0;
-	reg [7:0] controlreg = 0;
+	reg motorenaintreg;
+	reg wdtrip;
+	reg [7:0] controlreg;
 	reg [7:0] controlrddatareg;
+	
+	initial motorenaintreg = 0;
+	initial wdtrip = 0;
+	initial controlreg = 0;
 	
 	
 	assign motorenaint = motorenaintreg;

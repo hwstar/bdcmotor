@@ -41,7 +41,8 @@ module pwmcounter(
   input clk,
   input pwmcntce);
   
-  reg [7:0] counter = 8'h00;
+  reg [7:0] counter;
+  initial counter = 8'h00;
   
   assign pwmcount = counter;
   
@@ -61,7 +62,9 @@ module pwmregister(
   input pwmldce,
   input [7:0] wrtdata);
   
-  reg [7:0] pwmreg = 8'h00;
+  reg [7:0] pwmreg;
+  
+  initial pwmreg = 8'h80;
   
   assign pwmval = pwmreg;
   
@@ -82,8 +85,10 @@ module pwmod(
   input [7:0] pwmcount,
   input [7:0] pwmval);
   
-  reg pwmseo = 0;
+  reg pwmseo;
   reg [7:0] pwmval_clipped;
+  
+  initial pwmseo = 0;
   
   assign pwmseout = pwmseo;
  

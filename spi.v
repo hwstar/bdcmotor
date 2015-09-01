@@ -31,7 +31,9 @@ module spirdshft(
   input clk,
   input en);
   
-  reg [7:0] doutregister = 8'h00;
+  reg [7:0] doutregister;
+  
+  initial doutregister = 8'h00;
   
   assign dout = doutregister;
   
@@ -52,7 +54,9 @@ module spiwrshft(
   input rdld,
   input clk);
   
-  reg [7:0] dinregister = 8'h00;
+  reg [7:0] dinregister;
+  
+  initial dinregister = 8'h00;
   
   assign out = dinregister[7];
  
@@ -74,7 +78,9 @@ module spiclkcounter(
   input clk,
   input en);
   
-  reg [3:0] countreg = 0;
+  reg [3:0] countreg;
+  
+  initial countreg = 0;
   
   assign clkcount = countreg;
   
@@ -82,7 +88,7 @@ module spiclkcounter(
     if(en)
     	countreg <= countreg + 1;
     else
-    	countreg = 4'h0;
+    	countreg <= 4'h0;
   end
 endmodule
 
@@ -95,14 +101,16 @@ module addrregister(
   input din,
   input en);
   
-  reg [3:0] addrreg = 0;
+  reg [3:0] addrreg;
+  
+  initial addrreg = 0;
   
   assign addr = addrreg;
   
   always @(posedge clk) begin
     if(en) begin
       addrreg[3:1] <= addrreg[2:0];
-      addrreg[0] = din; // Clocked into MSB first
+      addrreg[0] <= din; // Clocked into MSB first
     end
   end
 endmodule
@@ -162,33 +170,33 @@ module spiseq(
     
     case(spiclkcounter)
       4'h0:
-        modetreg = 1; // Signal to load mode register
+        modetreg <= 1; // Signal to load mode register
 
       4'h1, 4'h2, 4'h3, 4'h4:
-      	addrtreg = spien; // Signal to load address register
+      	addrtreg <= spien; // Signal to load address register
       
       
       4'h5, 4'h6, 4'h7:
-        rdtreg = (mode & spien); // Signal to indicate read transaction
+        rdtreg <= (mode & spien); // Signal to indicate read transaction
       
       4'h8:
         begin
-          rdtreg = (mode & spien); // Signal to indicate read transaction
-          rdldreg = (mode & spien); // Load shift register
-          wrtreg = (~mode & spien); // Signal to indicate write transaction  
+          rdtreg <= (mode & spien); // Signal to indicate read transaction
+          rdldreg <= (mode & spien); // Load shift register
+          wrtreg <= (~mode & spien); // Signal to indicate write transaction  
         end
         
       4'h9, 4'ha, 4'hb, 
       4'hc, 4'hd, 4'he, 4'hf:
-        wrtreg = (~mode & spien); // Signal to indicate write transaction
+        wrtreg <= (~mode & spien); // Signal to indicate write transaction
      
       default:
         begin
-          rdtreg = 1'bx;
-          wrtreg = 1'bx;
-          addrtreg = 1'bx;
-          modetreg = 1'bx;
-          rdldreg = 1'bx;
+          rdtreg <= 1'bx;
+          wrtreg <= 1'bx;
+          addrtreg <= 1'bx;
+          modetreg <= 1'bx;
+          rdldreg <= 1'bx;
         end   
     endcase
   end
