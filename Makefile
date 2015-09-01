@@ -1,8 +1,8 @@
 
-PROJECT := system
+PROJECT := root
 DEVICE := 1k
 
-SOURCES = $(PROJECT).v spi.v bdcmotorchannel.v control.v tachcounter.v pwm8.v
+SOURCES = $(PROJECT).v system.v spi.v bdcmotorchannel.v control.v tachcounter.v pwm8.v
 
 .PHONY:	clean, wave, check, route
 
@@ -21,7 +21,7 @@ $(PROJECT).bin:	$(PROJECT).text
 	icepack $(PROJECT).text $(PROJECT).bin
 
 dsn: testbench.v $(SOURCES)
-	-killall gtkwave
+	@-killall gtkwave 2>/dev/null
 	iverilog -o dsn testbench.v $(SOURCES)
 	
 dump.vcd: dsn
@@ -33,10 +33,10 @@ wave: dump.vcd
 	gtkwave dump.vcd &
 	
 check: dump.vcd
-	-killall gtkwave
+	-killall gtkwave 2>/dev/null
 	
 clean:
-	-killall gtkwave
-	-rm *.blif *.text *.bin dsn dump.vcd
+	-killall gtkwave 2>/dev/null
+	-rm *.blif *.text *.bin dsn dump.vcd 2>/dev/null
 	
 

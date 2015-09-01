@@ -50,9 +50,9 @@ module tbshftin(
   input clk);
   
   reg [7:0] register = 8'h00;
-  
-  assign out = register;
  
+  assign out = register;
+  
   always @(posedge clk) begin
     register[7:1] <= register[6:0];
     register[0] = sin; // LSB input
@@ -113,8 +113,8 @@ module testbench;
   reg ss;
   reg clk;
   reg currentlimit;
-  reg tst;
-  reg wdogdis;
+  reg tstn;
+  reg wdogdisn;
   reg [7:0] outbyte;
   reg [1:0] tach;
  
@@ -129,6 +129,7 @@ module testbench;
   wire [7:0] inbyte;
   wire [1:0] pwm;
 
+  pullup (pull1) (miso);
   
  
   tbclkctr tbcc0(
@@ -152,23 +153,19 @@ module testbench;
     .out(inbyte));
  
  
-  system sys0(
+  root root0(
     .clk(clk),
     .sclk(sclk),
     .ss(ss),
     .mosi(mosi),
-    .spioe(spioe),
-    .tst(tst),
-    .wdogdis(wdogdis),
+    .tstn(tstn),
+    .wdogdisn(wdogdisn),
     .currentlimit(currentlimit),
     .tach(tach),
     .miso(miso),
     .motorena(motorena),
     .pwm(pwm));
  
-  
- 
-  
  
   
   // Send a burst of 16 spiclks
@@ -220,35 +217,63 @@ module testbench;
   
   initial begin
     $dumpvars(0, testbench);
-    clk = 0;
-    sclk = 1;
-    ss = 0;
-    currentlimit = 0;
-    tst = 1;
-    wdogdis = 0;
-    tach = 2'b00;
- 
-    // Clear any pending SPI transaction
     outbyte = 0;
+    ss = 0;
+    sclk = 0;
+    clk = 0;
+    currentlimit = 0;
+    tstn = 0;
+    wdogdisn = 1;
+    tach = 2'b00;    
+    #2
+    sclk = 1;
+ 
+   
+	
+	
+    // Clear any pending SPI transaction
     #40
     spiclkburst;
     #40
     spiclkburst;
     #100
     
+    // Retrieve hardware configuration
+    spiread(4'hd);
+    
    
     // Write config register
     spiwrite(4'h2, 8'h0); 
+    // Set watchdog divisor
+    spiwrite(4'he, 8'h10);
+     // Test lower bits of watchdog register
+    spiwrite(4'hf, 8'h01);
+    spiread(4'hf);
+    spiwrite(4'hf, 8'h02);
+    spiread(4'hf);
+    spiwrite(4'hf, 8'h04);
+    spiread(4'hf);
     
-    
-    
-    // Write pwm register
-    //spiwrite(4'h0, 8'h80);
+    // Enable motor
+    spiwrite(4'hf,8'h08);
+    // Wait for watchdog to trip
+    #10000
+    // Read watchdog register
+    spiread(4'hf);
+    // Reset the watchdog
+    spiwrite(4'hf,8'h80);
+    // Re-enable motor
+    spiwrite(4'hf,8'h08);
+    // Read watchdog register
+    spiread(4'hf);    
+    #20
+    // Disable watchdog
+	wdogdisn = 0;
+	// Read watchdog register
+    spiread(4'hf);  
    
     
-    spiread(4'h0);
 
-    
     #960000 $finish; 
   end
  

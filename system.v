@@ -127,18 +127,22 @@ module decoder(
 	input [3:0] addr,
 	input [7:0] countl,
 	input [7:0] counthfrozen,
+	input [7:0] controlrdata,
+	input [7:0] hwconfig,
 	output [7:0] rddata,
 	output countlread,
 	output pwmld,
 	output cfgld,
 	output ctrlld,
-	output wdogdivld);
+	output wdogdivld,
+	output wdreset);
   
 	reg regdecr0;
 	reg regdecw0;
 	reg regdecw2;
 	reg regdecwe;
 	reg regdecwf;
+	reg regdecrf;
 	reg [7:0] rddatareg;
 	
 	initial regdecr0 = 0;
@@ -146,12 +150,14 @@ module decoder(
 	initial regdecw2 = 0;
 	initial regdecwe = 0;
 	initial regdecwf = 0;
+	initial regdecrf = 0;
   
 	assign countlread = regdecr0;
 	assign pwmld = regdecw0;
 	assign cfgld = regdecw2;
 	assign ctrlld = regdecwf;
 	assign wdogdivld = regdecwe;
+	assign wdreset = regdecrf;
   
 	assign rddata = rddatareg;
   
@@ -163,6 +169,7 @@ module decoder(
 		regdecw2 <= 0;
 		regdecwe <= 0;
 		regdecwf <= 0;
+		regdecrf <= 0;
 		case(addr)
 			// Tach low byte and PWM
 			4'h0: begin
@@ -181,9 +188,14 @@ module decoder(
       
 			// Unimplemented decodes
 			4'h3, 4'h4, 4'h5, 4'h6, 4'h7, 4'h8,
-			4'h9, 4'ha, 4'hb, 4'hc, 4'hd: begin
+			4'h9, 4'ha, 4'hb, 4'hc: begin
 				rddatareg <= 8'h00;
 			end
+			
+			// Hardware configuration
+			4'hd:
+				rddatareg <= hwconfig;
+			
  
 			// Watchdog divisor
 			4'he:
@@ -191,7 +203,11 @@ module decoder(
 			
 			// Control
 			4'hf:
-				regdecwf <= we;
+				begin
+					rddatareg <= controlrdata;
+					regdecwf <= we;
+					regdecrf <= rdt;
+				end
       
 			// BoGuS
 			default: begin
@@ -253,6 +269,7 @@ module system(
 	wire invertpwm;
 	wire invphase;
 	wire motorenaint;
+	wire wdreset;
 	wire [3:0] addr;
 	wire [7:0] wrtdata;
 	wire [7:0] rddata;
@@ -260,6 +277,8 @@ module system(
 	wire [7:0] countl;
 	wire [7:0] counth;
 	wire [7:0] configreg;
+	wire [7:0] controlrdata;
+	wire [7:0] hwconfig;
   
 
 	assign motorena = motorenaint;
@@ -278,12 +297,15 @@ module system(
 		.addr(addr),
 		.countl(countl),
 		.counthfrozen(counthfrozen),
+		.controlrdata(controlrdata),
+		.hwconfig(hwconfig),
 		.rddata(rddata),
 		.countlread(countlread),
 		.pwmld(pwmld),
 		.cfgld(cfgld),
 		.ctrlld(ctrlld),
-		.wdogdivld(wdogdivld));
+		.wdogdivld(wdogdivld),
+		.wdreset(wdreset));
     
   
 	freezer frz0(
@@ -305,12 +327,15 @@ module system(
 		.wdogdivld(wdogdivld),
 		.tst(tst),
 		.wdogdis(wdogdis),
+		.wdreset(wdreset),
 		.wrtdata(wrtdata),
 		.pwmcntce(pwmcntce),
 		.filterce(filterce),
 		.invertpwm(invertpwm),
 		.invphase(invphase),
-		.motorenaint(motorenaint));
+		.motorenaint(motorenaint),
+		.controlrdata(controlrdata),
+		.hwconfig(hwconfig));
 		
 		 
 	bdcmotorchannel bdcm0(

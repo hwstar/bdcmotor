@@ -167,7 +167,7 @@ module wdtimer(
 	input clk,
 	input cein,
 	input enable,
-	input reset,
+	input wdreset,
 	input wdogdis,
 	input [7:0] wdogdivreg,
 	output wdtripce);
@@ -185,7 +185,7 @@ module wdtimer(
 	assign wdtripce = wdtripcesreg;
 	
 	always @(*) begin
-		if ((wdogdivreg == counter) && ~reset && enable && ~wdogdisreg)
+		if ((wdogdivreg == counter) && ~wdreset && enable && ~wdogdisreg)
 			wdtripcereg <= cein;
 		else
 			wdtripcereg <= 0;
@@ -198,7 +198,7 @@ module wdtimer(
 		wdogdisreg = wdogdis;
 		
 		// Only count when enable is high and reset is low, and watchdog disable is low
-		if(enable & ~reset & ~wdogdisreg) begin
+		if(enable & ~wdreset & ~wdogdisreg) begin
 			if(cein)
 				counter <= counter + 1;
 		end
@@ -216,14 +216,15 @@ module wdregister(
 	input clk,
 	input ctrlld,
 	input wdtripce,
+	input wdogdis,
 	input [7:0] wrtdata,
 	output motorenaint,
-	output [7:0] controlrddata);
+	output [7:0] controlrdata);
 	
 	reg motorenaintreg;
 	reg wdtrip;
 	reg [7:0] controlreg;
-	reg [7:0] controlrddatareg;
+	reg [7:0] controlrdatareg;
 	
 	initial motorenaintreg = 0;
 	initial wdtrip = 0;
@@ -231,11 +232,11 @@ module wdregister(
 	
 	
 	assign motorenaint = motorenaintreg;
-	assign controlrddata = controlrddatareg;
+	assign controlrdata = controlrdatareg;
 	
 	always @(*) begin
 		// Assemble control register read value
-		controlrddatareg <= {wdtrip, 1'b0, 1'b0, 1'b0, controlreg[3:0]};
+		controlrdatareg <= {wdtrip, wdogdis, 1'b0, 1'b0, controlreg[3:0]};
 		// Motor enable
 		motorenaintreg <=  ~wdtrip & controlreg[3];
 	end
@@ -269,12 +270,15 @@ module control(
 	output invphase,
 	output invertpwm,
 	output motorenaint,
+	output [7:0] controlrdata,
+	output [7:0] hwconfig,
 	input clk,
 	input cfgld,
 	input ctrlld,
 	input wdogdivld,
 	input tst,
 	input wdogdis,
+	input wdreset,
 	input [7:0] wrtdata);
 	
 	wire [7:0] configreg;
@@ -289,16 +293,17 @@ module control(
 	
 	
 	
+	
 	reg tie1 = 1;
 	
-	reg ctrlrdce = 0; // FIXME
 	
 	// Prevent config and watchdog divisor register writes when motor is enabled
 	assign cfgce = cfgld & ~motorenaint;
 	assign wdogdivregce = wdogdivld & ~motorenaint;
 	
-	assign motorenaint = 0; // FIXME
-	
+	// Hardware configuration register
+	assign hwconfig = {1'b0,1'b0,2'b01,4'b0000};
+
 	
 	always @(*) begin
 		if(tst)
@@ -346,11 +351,22 @@ module control(
 		.clk(clk),
 		.cein(wdogcntce),
 		.enable(motorenaint),
-		.reset(ctrlrdce),
+		.wdreset(wdreset),
 		.wdogdis(wdogdis),
 		.wdogdivreg(wdogdivreg),
 		.wdtripce(wdtripce));
 	
+	
+	wdregister wdreg0(
+		.clk(clk),
+		.ctrlld(ctrlld),
+		.wdtripce(wdtripce),
+		.wdogdis(wdogdis),
+		.wrtdata(wrtdata),
+		.motorenaint(motorenaint),
+		.controlrdata(controlrdata));
+		
+		
 	assign invphase = configreg[5];
 	assign invertpwm = configreg[4];
 endmodule

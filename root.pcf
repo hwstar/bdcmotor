@@ -1,16 +1,16 @@
-# example.pcf
+# root.pcf
 set_io clk 21
 set_io sclk 112
 set_io mosi 113
 set_io miso 114
 set_io ss 115
-set_io wdogdis 117
+set_io wdogdisn 117
 set_io pwm[0] 62
 set_io pwm[1] 61
 set_io motorena 60
 set_io tach[0] 56
 set_io tach[1] 48
 set_io currentlimit 47
-set_io tst 44
-set_io spioe 45
+set_io tstn 44
+#available 45
 
