@@ -25,9 +25,9 @@
 //
 
 
-//`define WITH_DEADTIME			// Deadtime support 
+`define WITH_DEADTIME			// Deadtime support 
 
-// PWM minimum and maximum clip values (only meaningful if WIYH_DEADTIME isn't defined)
+// PWM minimum and maximum clip values (only meaningful if WITH_DEADTIME isn't defined)
 
 `define PWM_MIN 3
 `define PWM_MAX 251
@@ -145,6 +145,21 @@ endmodule
 /*
 * This module makes complementary pwm signals from a single input
 * with or without deadtime
+*
+* PWM output bit truth table
+*
+* 00 - Motor coast (All H-bridge drivers should be off).
+* 01 - Run CCW (Upper MOSFET driving the motor negative terminal)
+* 10 - Run CW (Upper MOSFET driving the motor positive terminal)
+* 11 - Enable dynamic braking (Lower MOSFETS on, upper MOSFETS off)
+*
+* PWM flips the output bits between 01 and 10 according to the programmed
+* duty cycle. This only is allowed to happen when the motor is enabled
+* and the brake is off.
+*
+* If compiled with deadtime, then when the PWM state changes, the motor
+* outputs will go into coast mode for 8 system clock cycles.
+*
 */
 
 module deadtime(
@@ -159,8 +174,9 @@ module deadtime(
 
 	always @(*) begin
 	    if(enablepwm) begin
+		// Master enable on
 			if(run) begin
-				`ifndef DEADTIME
+				`ifndef WITH_DEADTIME
 				// No deadtime
 				pwmoutreg[0] <= pwmin;
 				pwmoutreg[1] <= ~pwmin;
@@ -177,17 +193,20 @@ module deadtime(
 				`endif
 			end
 			else begin
+				// Dynamic breaking enabled
 				pwmoutreg[0] <= 1;
 				pwmoutreg[1] <= 1;
 			end
 				
 		end
+		// Master enable off
 		else begin // All motors disabled
 			if(run) begin
 				pwmoutreg[0] <= 0;
 				pwmoutreg[1] <= 0;
 			end
 			else begin
+				// Dynamic breaking enabled
 				pwmoutreg[0] <= 1;
 				pwmoutreg[1] <= 1;
 			end

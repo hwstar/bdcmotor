@@ -7,10 +7,28 @@ set_io ss 115
 set_io wdogdisn 117
 set_io pwm0[0] 62
 set_io pwm0[1] 61
+
 set_io motorena 60
 set_io tach0[0] 56
 set_io tach0[1] 48
 set_io currentlimit0 47
 set_io tstn 44
 #available 45
+
+
+# Inaccessible pins on the ICEstick
+# the last two motor channels are parked on inaccessible pins.
+
+set_io pwm1[0] 23
+set_io pwm1[1] 24
+set_io tach1[0] 25
+set_io tach1[1] 26
+set_io currentlimit1 37
+
+set_io pwm2[0] 28
+set_io pwm2[1] 29
+set_io tach2[0] 31
+set_io tach2[1] 33
+set_io currentlimit2 38
+
 

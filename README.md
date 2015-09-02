@@ -1,5 +1,5 @@
 This is an implementation in Verilog of a brushed DC motor PWM generator and quadrature tach
-counter in "motor channel".
+counter in an interface called a "motor channel".
 
 This design provides  up 3 motor channels. 
 
