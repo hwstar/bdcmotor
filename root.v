@@ -15,10 +15,18 @@
  * MA 02110-1301, USA.
  *
  *
- *****  REGISTER MAP *****
+ ********************* REGISTER MAP ************************************
  * 
+ * ******** Motor channel registers ********
  *
- *** Address 0	:	Tach Low Byte (R), PWM Register (W) ***
+ * There are 3 sets of motor channel registers:
+ *
+ * Channel 0 has addresses 0,1, and 2
+ * Channel 1 has addresses 4,5, and 6
+ * Channel 2 has addresses 8,9 and a
+ *
+ *
+ *** Address 0,4,8	:	Tach Low Byte (R), PWM Register (W) ***
  *
  * Read
  * 
@@ -30,13 +38,13 @@
  * PWM value. 8'h80 corresponds to a 50% duty cycle. The motor would
  * be off in this case. 8'h80 is the default at power on.
  *
- *** Address 1	:	Tach High Byte(R) ***
+ *** Address 1,5,9	:	Tach High Byte(R) ***
  *
  * Most significant byte of tach register. This has to be latched by
  * reading the low byte first.
  *
  *
- *** Address 2	:	Motor Config Register (W) ***
+ *** Address 2,6,a	:	Motor Config Register (W) ***
  *
  * Bit 7	:	Reserved set to 0
  * Bit 6	:	Reserved set to 0 
@@ -63,6 +71,7 @@
  *  10 - Multiply by 4
  *  11 - Multiply by 8
  * 
+ ******** Control Registers *********
  *
  *** Address d	:	Hardware Config Register (R) ***
  *
@@ -82,12 +91,12 @@
  *
  * Bit 7	:	Watchdog tripped
  * Bit 6	:	Watchdog disabled
- * Bit 5	:	Reserved
- * Bit 4	:	Reserved
- * Bit 3	:	Motor Enable
- * Bit 2	:	Reserved
- * Bit 1	:	Reserved
- * Bit 0	:	Reserved
+ * Bit 5	:	Reserved, reads back as 0
+ * Bit 4	:	Reserved, reads back as 0
+ * Bit 3	:	Master Motor Enable
+ * Bit 2	:	Run2/~Brake2
+ * Bit 1	:	Run1/~Brake1
+ * Bit 0	:	Run0/~Brake0
  *
  * 1. The watchdog timer is reset when this register is read.
  *
@@ -101,6 +110,12 @@
  *    8'h80 to the port, then re-enable the motor by setting bit 3.
  *    A watchdog trip event is noted by bit 7 being set high.
  *
+ * 4. Runx/~Brakex
+ *
+ * When these bits are high, the motor is in run mode and will respond
+ * to pwm commands if the master motor enable is also set. If these
+ * bits get set to 0, then the motor dynamic brake circuit will be
+ * activated.
  */
 
 /*
@@ -115,11 +130,17 @@ module root(
 	 input mosi,
 	 input tstn,
 	 input wdogdisn,
-	 input currentlimit,
-	 input [1:0] tach,
+	 input currentlimit0,
+	 input currentlimit1,
+	 input currentlimit2,
+	 input [1:0] tach0,
+	 input [1:0] tach1,
+	 input [1:0] tach2,
 	 output miso,
 	 output motorena,
-	 output [1:0] pwm);
+	 output [1:0] pwm0,
+	 output [1:0] pwm1,
+	 output [1:0] pwm2);
 	
 	wire misoi;
 	reg misoreg;
@@ -132,16 +153,22 @@ module root(
     .spioe(spioe),
     .tst(tst),
     .wdogdis(wdogdis),
-    .currentlimit(currentlimit),
-    .tach(tach),
+    .currentlimit0(currentlimit0),
+    .currentlimit1(currentlimit1),
+    .currentlimit2(currentlimit2),
+    .tach0(tach0),
+    .tach1(tach1),
+    .tach2(tach2),
     .miso(misoi),
     .motorena(motorena),
-    .pwm(pwm));
+    .pwm0(pwm0),
+    .pwm1(pwm1),
+    .pwm2(pwm2));
  
 	
 	assign miso = misoreg;
 	assign tst = ~tstn;
-	assign wdogdis = ~wdogdis;
+	assign wdogdis = ~wdogdisn;
 	
 
 	always @(*) begin

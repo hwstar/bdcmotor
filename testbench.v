@@ -112,11 +112,16 @@ module testbench;
   reg sclk;
   reg ss;
   reg clk;
-  reg currentlimit;
+  reg currentlimit0;
+  reg currentlimit1;
+  reg currentlimit2;
+
   reg tstn;
   reg wdogdisn;
   reg [7:0] outbyte;
-  reg [1:0] tach;
+  reg [1:0] tach0;
+  reg [1:0] tach1;
+  reg [1:0] tach2;
  
   
   wire mosi;
@@ -127,7 +132,9 @@ module testbench;
  
   wire [2:0] cycle;
   wire [7:0] inbyte;
-  wire [1:0] pwm;
+  wire [1:0] pwm0;
+  wire [1:0] pwm1;
+  wire [1:0] pwm2;
 
   pullup (pull1) (miso);
   
@@ -160,11 +167,17 @@ module testbench;
     .mosi(mosi),
     .tstn(tstn),
     .wdogdisn(wdogdisn),
-    .currentlimit(currentlimit),
-    .tach(tach),
+    .currentlimit0(currentlimit0),
+    .currentlimit1(currentlimit1),
+    .currentlimit2(currentlimit2),
+    .tach0(tach0),
+    .tach1(tach1),
+    .tach2(tach2),
     .miso(miso),
     .motorena(motorena),
-    .pwm(pwm));
+    .pwm0(pwm0),
+    .pwm1(pwm1),
+    .pwm2(pwm2));
  
  
   
@@ -221,10 +234,14 @@ module testbench;
     ss = 0;
     sclk = 0;
     clk = 0;
-    currentlimit = 0;
+    currentlimit0 = 0;
+    currentlimit1 = 0;
+    currentlimit2 = 0;
     tstn = 0;
     wdogdisn = 1;
-    tach = 2'b00;    
+    tach0 = 2'b00;  
+    tach1 = 2'b00;
+    tach2 = 2'b00;  
     #2
     sclk = 1;
  
@@ -249,13 +266,13 @@ module testbench;
      // Test lower bits of watchdog register
     spiwrite(4'hf, 8'h01);
     spiread(4'hf);
-    spiwrite(4'hf, 8'h02);
+    spiwrite(4'hf, 8'h03);
     spiread(4'hf);
-    spiwrite(4'hf, 8'h04);
+    spiwrite(4'hf, 8'h07);
     spiread(4'hf);
     
     // Enable motor
-    spiwrite(4'hf,8'h08);
+    spiwrite(4'hf,8'h0f);
     // Wait for watchdog to trip
     #10000
     // Read watchdog register
@@ -263,7 +280,7 @@ module testbench;
     // Reset the watchdog
     spiwrite(4'hf,8'h80);
     // Re-enable motor
-    spiwrite(4'hf,8'h08);
+    spiwrite(4'hf,8'h0f);
     // Read watchdog register
     spiread(4'hf);    
     #20
@@ -280,9 +297,29 @@ module testbench;
 	spiwrite(4'h0, 8'hC0);
 	#100000
 	// Set the pwm to 50%
-	spiwrite(4'h0, 8'h80);	
+	spiwrite(4'h0, 8'h80);
+	#100000	
+	
+	// Set pwm to 25%
+	spiwrite(4'h4, 8'h40);
+	#100000
+	// Set the pwm to 75%
+	spiwrite(4'h4, 8'hC0);
+	#100000
+	// Set the pwm to 50%
+	spiwrite(4'h4, 8'h80);	
+	#100000
+	
+	// Set pwm to 25%
+	spiwrite(4'h8, 8'h40);
+	#100000
+	// Set the pwm to 75%
+	spiwrite(4'h8, 8'hC0);
+	#100000
+	// Set the pwm to 50%
+	spiwrite(4'h8, 8'h80);	
   
-    #700000 $finish; 
+    #100000 $finish; 
   end
  
   always #4 clk = ~clk;

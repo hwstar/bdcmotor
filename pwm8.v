@@ -150,17 +150,51 @@ endmodule
 module deadtime(
 	input clk,
 	input pwmin,
+	input enablepwm,
+	input run,
 	output [1:0] pwmout);
 	
 	reg [1:0] pwmoutreg;
 	
-	`ifndef WITH_DEADTIME
+
 	always @(*) begin
-	    // No deadtime
-		pwmoutreg[0] = pwmin;
-		pwmoutreg[1] = ~pwmin;
+	    if(enablepwm) begin
+			if(run) begin
+				`ifndef DEADTIME
+				// No deadtime
+				pwmoutreg[0] <= pwmin;
+				pwmoutreg[1] <= ~pwmin;
+				`else
+				// Deadtime
+				if(counter != 7) begin
+					pwmoutreg[0] <= 0;
+					pwmoutreg[1] <= 0;
+				end
+				else begin
+					pwmoutreg[0] <= pwmlastin;
+					pwmoutreg[1] <= ~pwmlastin;
+				end	
+				`endif
+			end
+			else begin
+				pwmoutreg[0] <= 1;
+				pwmoutreg[1] <= 1;
+			end
+				
+		end
+		else begin // All motors disabled
+			if(run) begin
+				pwmoutreg[0] <= 0;
+				pwmoutreg[1] <= 0;
+			end
+			else begin
+				pwmoutreg[0] <= 1;
+				pwmoutreg[1] <= 1;
+			end
+		end
 	end
-	`else
+	
+	`ifdef WITH_DEADTIME
 	// Deadtime
 	reg [2:0] counter = 0;
 	reg pwmlastin = 0;
@@ -172,17 +206,6 @@ module deadtime(
 			pwmlastin <= pwmin;
 		end
 	end
-	
-	always @(*) begin
-		if(counter != 7) begin
-			pwmoutreg[0] = 0;
-			pwmoutreg[1] = 0;
-		end
-		else begin
-			pwmoutreg[0] = pwmlastin;
-			pwmoutreg[1] = ~pwmlastin;
-		end
-	end	
 	`endif
 	
 	assign pwmout = pwmoutreg;
@@ -199,6 +222,7 @@ module pwm8(
   input pwmldce,
   input invertpwm,
   input enablepwm,
+  input run,
   input currentlimit,
   input [7:0] wrtdata);
   
@@ -232,6 +256,8 @@ module pwm8(
   deadtime deadt0(
 	.clk(clk),
 	.pwmin(pwmcorrseout),
+	.enablepwm(enablepwm),
+	.run(run),
 	.pwmout(pwmout));
 	
   assign pwmcorrseout = (pwmseout ^ invertpwm);

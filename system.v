@@ -93,14 +93,24 @@ module decoder(
 	input we,
 	input rdt,
 	input [3:0] addr,
-	input [7:0] countl,
-	input [7:0] counthfrozen,
+	input [7:0] countl0,
+	input [7:0] counthfrozen0,
+	input [7:0] countl1,
+	input [7:0] counthfrozen1,
+	input [7:0] countl2,
+	input [7:0] counthfrozen2,
 	input [7:0] controlrdata,
 	input [7:0] hwconfig,
 	output [7:0] rddata,
-	output countlread,
-	output pwmld,
-	output cfgld,
+	output countlread0,
+	output pwmld0,
+	output cfgld0,
+	output countlread1,
+	output pwmld1,
+	output cfgld1,
+	output countlread2,
+	output pwmld2,
+	output cfgld2,
 	output ctrlld,
 	output wdogdivld,
 	output wdreset);
@@ -108,6 +118,13 @@ module decoder(
 	reg regdecr0;
 	reg regdecw0;
 	reg regdecw2;
+	reg regdecr4;
+	reg regdecw4;
+	reg regdecw6;
+	reg regdecr8;
+	reg regdecw8;
+	reg regdecwa;
+	
 	reg regdecwe;
 	reg regdecwf;
 	reg regdecrf;
@@ -116,13 +133,25 @@ module decoder(
 	initial regdecr0 = 0;
 	initial regdecw0 = 0;
 	initial regdecw2 = 0;
+	initial regdecr4 = 0;
+	initial regdecw4 = 0;
+	initial regdecw6 = 0;
+	initial regdecr8 = 0;
+	initial regdecw8 = 0;
+	initial regdecwa = 0;		
 	initial regdecwe = 0;
 	initial regdecwf = 0;
 	initial regdecrf = 0;
   
-	assign countlread = regdecr0;
-	assign pwmld = regdecw0;
-	assign cfgld = regdecw2;
+	assign countlread0 = regdecr0;
+	assign countlread1 = regdecr4;
+	assign countlread2 = regdecr8;
+	assign pwmld0 = regdecw0;
+	assign pwmld1 = regdecw4;
+	assign pwmld2 = regdecw8;
+	assign cfgld0 = regdecw2;
+	assign cfgld1 = regdecw6;
+	assign cfgld2 = regdecwa;
 	assign ctrlld = regdecwf;
 	assign wdogdivld = regdecwe;
 	assign wdreset = regdecrf;
@@ -135,28 +164,66 @@ module decoder(
 		regdecr0 <= 0;
 		regdecw0 <= 0;
 		regdecw2 <= 0;
+		regdecr4 <= 0;
+		regdecw4 <= 0;
+		regdecw6 <= 0;
+		regdecr8 <= 0;
+		regdecw8 <= 0;
+		regdecwa <= 0;
 		regdecwe <= 0;
 		regdecwf <= 0;
 		regdecrf <= 0;
 		case(addr)
-			// Tach low byte and PWM
+			// Channel 0 Tach low byte and PWM
 			4'h0: begin
-				rddatareg <= countl;
+				rddatareg <= countl0;
 				regdecw0 <= we;
 				regdecr0 <= rdt;
 			end
-			// Tach high byte
+			// Channel 0 Tach high byte
 			4'h1: begin
-				rddatareg <= counthfrozen;
+				rddatareg <= counthfrozen0;
 			end
 			    
-			// Configuration
+			// Channel 0 Configuration
 			4'h2:
 				regdecw2 <= we;
+				
+			// Channel 1 Tach low byte and PWM
+			4'h4: begin
+				rddatareg <= countl1;
+				regdecw4 <= we;
+				regdecr4 <= rdt;
+			end
+			// Channel 1 Tach high byte
+			4'h5: begin
+				rddatareg <= counthfrozen1;
+			end
+			    
+			// Channel 1 Configuration
+			4'h6:
+				regdecw6 <= we;
+
+				
+			// Channel 2 Tach low byte and PWM
+			4'h8: begin
+				rddatareg <= countl2;
+				regdecw8 <= we;
+				regdecr8 <= rdt;
+			end
+			// Channel 2 Tach high byte
+			4'h9: begin
+				rddatareg <= counthfrozen2;
+			end
+			    
+			// Channel 2 Configuration
+			4'ha:
+				regdecwa <= we;     
+      
       
 			// Unimplemented decodes
-			4'h3, 4'h4, 4'h5, 4'h6, 4'h7, 4'h8,
-			4'h9, 4'ha, 4'hb, 4'hc: begin
+			4'h3, 4'h7,
+			4'hb, 4'hc: begin
 				rddatareg <= 8'h00;
 			end
 			
@@ -181,9 +248,18 @@ module decoder(
 			default: begin
 				rddatareg <= 8'bxxxxxxxx;
 				regdecr0 <= 1'bx;
+				regdecr4 <= 1'bx;
+				regdecr8 <= 1'bx;
 				regdecw0 <= 1'bx;
 				regdecw2 <= 1'bx;
 				regdecwf <= 1'bx;
+				regdecw4 <= 1'bx;
+				regdecw6 <= 1'bx;
+				regdecw8 <= 1'bx;
+				regdecwa <= 1'bx;
+			
+			
+				
 			end
 		endcase
 	end
@@ -201,7 +277,9 @@ module system(
 	// Data to master (MISO)
 	output miso,
 	// motor pwm
-	output [1:0] pwm,
+	output [1:0] pwm0,
+	output [1:0] pwm1,
+	output [1:0] pwm2,
 	// motor enable
 	output motorena,
 	// spi output enable
@@ -215,36 +293,64 @@ module system(
 	// Master Out Slave In (MOSI)
 	input mosi,
 	// Current limit detect
-	input currentlimit,
+	input currentlimit0,
+	input currentlimit1,
+	input currentlimit2,
+	
 	// Test input
 	input tst,
 	// Watchdog disable
 	input wdogdis,
 	// Tachometer phases
-	input [1:0] tach); 
+	input [1:0] tach0, 
+	input [1:0] tach1,
+	input [1:0] tach2);
   
   
+
+	wire countlread0;
+	wire countlread1;
+	wire countlread2;
+	wire freeze0;
+	wire freeze1;
+	wire freeze2;
+	wire highce0;
+	wire highce1;
+	wire highce2;
+	wire pwmld0;
+	wire pwmld1;
+	wire pwmld2;
+	wire cfgld0;
+	wire cfgld1;
+	wire cfgld2;
+	wire invertpwm0;
+	wire invertpwm1;
+	wire invertpwm2;
+	wire invphase0;
+	wire invphase1;
+	wire invphase2;
+	wire run0;
+	wire run1;
+	wire run2;
 	wire rdt;
 	wire wrt;
 	wire we;
-	wire countlread;
-	wire freeze;
-	wire highce;
-	wire pwmld;
-	wire cfgld;
 	wire ctrlld;
 	wire wdogdivld;
-	wire invertpwm;
-	wire invphase;
 	wire motorenaint;
 	wire wdreset;
+	wire [7:0] counthfrozen0;
+	wire [7:0] countl0;
+	wire [7:0] counth0;
+	wire [7:0] counthfrozen1;
+	wire [7:0] countl1;
+	wire [7:0] counth1;
+	wire [7:0] counthfrozen2;
+	wire [7:0] countl2;
+	wire [7:0] counth2;
 	wire [3:0] addr;
 	wire [7:0] wrtdata;
 	wire [7:0] rddata;
-	wire [7:0] counthfrozen;
-	wire [7:0] countl;
-	wire [7:0] counth;
-	wire [7:0] configreg;
 	wire [7:0] controlrdata;
 	wire [7:0] hwconfig;
   
@@ -263,14 +369,24 @@ module system(
 		.we(we),
 		.rdt(rdt),
 		.addr(addr),
-		.countl(countl),
-		.counthfrozen(counthfrozen),
+		.countl0(countl0),
+		.counthfrozen0(counthfrozen0),
+		.countl1(countl1),
+		.counthfrozen1(counthfrozen1),
+		.countl2(countl2),
+		.counthfrozen2(counthfrozen2),
 		.controlrdata(controlrdata),
 		.hwconfig(hwconfig),
 		.rddata(rddata),
-		.countlread(countlread),
-		.pwmld(pwmld),
-		.cfgld(cfgld),
+		.countlread0(countlread0),
+		.countlread1(countlread1),
+		.countlread2(countlread2),
+		.pwmld0(pwmld0),
+		.pwmld1(pwmld1),
+		.pwmld2(pwmld2),
+		.cfgld0(cfgld0),
+		.cfgld1(cfgld1),
+		.cfgld2(cfgld2),
 		.ctrlld(ctrlld),
 		.wdogdivld(wdogdivld),
 		.wdreset(wdreset));
@@ -278,29 +394,68 @@ module system(
   
 	freezer frz0(
 		.clk(clk),
-		.countlread(countlread),
-		.freeze(freeze),
-		.highce(highce));
+		.countlread(countlread0),
+		.freeze(freeze0),
+		.highce(highce0));
+		
+		
+	freezer frz1(
+		.clk(clk),
+		.countlread(countlread1),
+		.freeze(freeze1),
+		.highce(highce1));
+  
+  	freezer frz2(
+		.clk(clk),
+		.countlread(countlread2),
+		.freeze(freeze2),
+		.highce(highce2));
   
 	reg8 counthrreg0(
 		.clk(clk),
-		.ce(highce),
-		.in(counth),
-		.out(counthfrozen));
+		.ce(highce0),
+		.in(counth0),
+		.out(counthfrozen0));
+		
+		
+	reg8 counthrreg1(
+		.clk(clk),
+		.ce(highce1),
+		.in(counth1),
+		.out(counthfrozen1));
+		
+	reg8 counthrreg2(
+		.clk(clk),
+		.ce(highce2),
+		.in(counth2),
+		.out(counthfrozen2));
 
 	control ctrl0(
 		.clk(clk),
-		.cfgld(cfgld),
+		.cfgld0(cfgld0),
+		.cfgld1(cfgld1),
+		.cfgld2(cfgld2),
 		.ctrlld(ctrlld),
 		.wdogdivld(wdogdivld),
 		.tst(tst),
 		.wdogdis(wdogdis),
 		.wdreset(wdreset),
 		.wrtdata(wrtdata),
-		.pwmcntce(pwmcntce),
-		.filterce(filterce),
-		.invertpwm(invertpwm),
-		.invphase(invphase),
+		.pwmcntce0(pwmcntce0),
+		.pwmcntce1(pwmcntce1),
+		.pwmcntce2(pwmcntce2),		
+		.filterce0(filterce0),
+		.filterce1(filterce1),
+		.filterce2(filterce2),
+		.invertpwm0(invertpwm0),
+		.invertpwm1(invertpwm1),
+		.invertpwm2(invertpwm2),
+		.run0(run0),
+		.run1(run1),
+		.run2(run2),
+		.invphase0(invphase0),
+		.invphase1(invphase1),
+		.invphase2(invphase2),
 		.motorenaint(motorenaint),
 		.controlrdata(controlrdata),
 		.hwconfig(hwconfig));
@@ -308,19 +463,56 @@ module system(
 		 
 	bdcmotorchannel bdcm0(
 		.clk(clk),
-		.filterce(filterce),
-		.invphase(invphase),
-		.freeze(freeze),
-		.pwmcntce(pwmcntce),
-		.pwmldce(pwmld),
-		.invertpwm(invertpwm),
+		.filterce(filterce0),
+		.invphase(invphase0),
+		.freeze(freeze0),
+		.pwmcntce(pwmcntce0),
+		.pwmldce(pwmld0),
+		.invertpwm(invertpwm0),
 		.enablepwm(motorenaint),
-		.currentlimit(currentlimit),
-		.tach(tach),
+		.run(run0),
+		.currentlimit(currentlimit0),
+		.tach(tach0),
 		.wrtdata(wrtdata),
-		.countl(countl),
-		.counth(counth),
-		.pwmout(pwm));
+		.countl(countl0),
+		.counth(counth0),
+		.pwmout(pwm0));
+		
+		
+	bdcmotorchannel bdcm1(
+		.clk(clk),
+		.filterce(filterce1),
+		.invphase(invphase1),
+		.freeze(freeze1),
+		.pwmcntce(pwmcntce1),
+		.pwmldce(pwmld1),
+		.invertpwm(invertpwm1),
+		.enablepwm(motorenaint),
+		.run(run1),
+		.currentlimit(currentlimit1),
+		.tach(tach1),
+		.wrtdata(wrtdata),
+		.countl(countl1),
+		.counth(counth1),
+		.pwmout(pwm1));
+		
+		
+	bdcmotorchannel bdcm2(
+		.clk(clk),
+		.filterce(filterce2),
+		.invphase(invphase2),
+		.freeze(freeze2),
+		.pwmcntce(pwmcntce2),
+		.pwmldce(pwmld2),
+		.invertpwm(invertpwm2),
+		.enablepwm(motorenaint),
+		.run(run2),
+		.currentlimit(currentlimit2),
+		.tach(tach2),
+		.wrtdata(wrtdata),
+		.countl(countl2),
+		.counth(counth2),
+		.pwmout(pwm2));
   
    
 	spi spi0(

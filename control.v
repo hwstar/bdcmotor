@@ -219,6 +219,9 @@ module wdregister(
 	input wdogdis,
 	input [7:0] wrtdata,
 	output motorenaint,
+	output run0,
+	output run1,
+	output run2,
 	output [7:0] controlrdata);
 	
 	reg motorenaintreg;
@@ -232,6 +235,10 @@ module wdregister(
 	
 	
 	assign motorenaint = motorenaintreg;
+	assign run0 = controlreg[0];
+	assign run1 = controlreg[1];
+	assign run2 = controlreg[2];
+	
 	assign controlrdata = controlrdatareg;
 	
 	always @(*) begin
@@ -265,15 +272,28 @@ endmodule
 */
 
 module control(
-	output pwmcntce,
-	output filterce,
-	output invphase,
-	output invertpwm,
+	output pwmcntce0,
+	output pwmcntce1,
+	output pwmcntce2,
+	output filterce0,
+	output filterce1,
+	output filterce2,
+	output invphase0,
+	output invphase1,
+	output invphase2,
+	output invertpwm0,
+	output invertpwm1,
+	output invertpwm2,
+	output run0,
+	output run1,
+	output run2,
 	output motorenaint,
 	output [7:0] controlrdata,
 	output [7:0] hwconfig,
 	input clk,
-	input cfgld,
+	input cfgld0,
+	input cfgld1,
+	input cfgld2,
 	input ctrlld,
 	input wdogdivld,
 	input tst,
@@ -281,11 +301,16 @@ module control(
 	input wdreset,
 	input [7:0] wrtdata);
 	
-	wire [7:0] configreg;
+	wire [7:0] configreg0;
+	wire [7:0] configreg1;
+	wire [7:0] configreg2;
+	
 	wire [7:0] wdogdivreg;
 	wire ce64;
 	wire ce16384;
-	wire cfgce;
+	wire cfgce0;
+	wire cfgce1;
+	wire cfgce2;
 	wire wdogdivregce;
 	wire wdtripce;
 	
@@ -298,11 +323,13 @@ module control(
 	
 	
 	// Prevent config and watchdog divisor register writes when motor is enabled
-	assign cfgce = cfgld & ~motorenaint;
+	assign cfgce0 = cfgld0 & ~motorenaint;
+	assign cfgce1 = cfgld1 & ~motorenaint;
+	assign cfgce2 = cfgld2 & ~motorenaint;
 	assign wdogdivregce = wdogdivld & ~motorenaint;
 	
 	// Hardware configuration register
-	assign hwconfig = {1'b0,1'b0,2'b01,4'b0000};
+	assign hwconfig = {1'b0,1'b0,2'b11,4'b0000};
 
 	
 	always @(*) begin
@@ -318,11 +345,24 @@ module control(
 		.in(wrtdata),
 		.out(wdogdivreg));
 	
-	reg8 configregister(
+	reg8 configregister0(
 		.clk(clk),
-		.ce(cfgce),
+		.ce(cfgce0),
 		.in(wrtdata),
-		.out(configreg));
+		.out(configreg0));
+		
+	reg8 configregister1(
+		.clk(clk),
+		.ce(cfgce1),
+		.in(wrtdata),
+		.out(configreg1));
+		
+	reg8 configregister2(
+		.clk(clk),
+		.ce(cfgce2),
+		.in(wrtdata),
+		.out(configreg2));		
+		
 		
 	fixeddivby64 fdiv64(
 		.cein(tie1),
@@ -334,18 +374,41 @@ module control(
 		.clk(clk),
 		.ceout(ce16384));
 		
-	divby1248 filterdiv(
+	divby1248 filterdiv0(
 		.clk(clk),
 		.cein(ce64),
-		.divisor(configreg[3:2]),
-		.ceout(filterce));
+		.divisor(configreg0[3:2]),
+		.ceout(filterce0));
 		
-	divby1248 pwmdiv(
+	divby1248 pwmdiv0(
 		.clk(clk),
 		.cein(tie1),
-		.divisor(configreg[1:0]),
-		.ceout(pwmcntce));
+		.divisor(configreg0[1:0]),
+		.ceout(pwmcntce0));
+
+	divby1248 filterdiv1(
+		.clk(clk),
+		.cein(ce64),
+		.divisor(configreg1[3:2]),
+		.ceout(filterce1));
 		
+	divby1248 pwmdiv1(
+		.clk(clk),
+		.cein(tie1),
+		.divisor(configreg1[1:0]),
+		.ceout(pwmcntce1));		
+
+	divby1248 filterdiv2(
+		.clk(clk),
+		.cein(ce64),
+		.divisor(configreg2[3:2]),
+		.ceout(filterce2));
+		
+	divby1248 pwmdiv2(
+		.clk(clk),
+		.cein(tie1),
+		.divisor(configreg2[1:0]),
+		.ceout(pwmcntce2));		
 		
 	wdtimer wdtimer0(
 		.clk(clk),
@@ -363,12 +426,21 @@ module control(
 		.wdtripce(wdtripce),
 		.wdogdis(wdogdis),
 		.wrtdata(wrtdata),
+		.run0(run0),
+		.run1(run1),
+		.run2(run2),
 		.motorenaint(motorenaint),
 		.controlrdata(controlrdata));
 		
 		
-	assign invphase = configreg[5];
-	assign invertpwm = configreg[4];
+	assign invphase0 = configreg0[5];
+	assign invertpwm0 = configreg0[4];
+	assign invphase1 = configreg1[5];
+	assign invertpwm1 = configreg1[4];
+	assign invphase2 = configreg2[5];
+	assign invertpwm2 = configreg2[4];
+
+	
 endmodule
 
 	

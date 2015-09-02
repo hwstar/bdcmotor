@@ -47,6 +47,8 @@ module bdcmotorchannel(
   	input invertpwm,
     // Enable the PWM outputs
     input enablepwm,
+    // Run or send the brake signal to the pwm outputs
+    input run,
     // Force early termination of the PWM cycle
     input currentlimit,
     // Quadrature tach inputs
@@ -70,6 +72,7 @@ module bdcmotorchannel(
     .pwmldce(pwmldce),
     .invertpwm(invertpwm),
     .enablepwm(enablepwm),
+    .run(run),
     .currentlimit(currentlimit),
     .wrtdata(wrtdata),
     .pwmout(pwmout));
