@@ -272,9 +272,17 @@ module testbench;
 	// Read watchdog register
     spiread(4'hf);  
    
-    
-
-    #960000 $finish; 
+   
+	// Set pwm to 25%
+	spiwrite(4'h0, 8'h40);
+	#100000
+	// Set the pwm to 75%
+	spiwrite(4'h0, 8'hC0);
+	#100000
+	// Set the pwm to 50%
+	spiwrite(4'h0, 8'h80);	
+  
+    #700000 $finish; 
   end
  
   always #4 clk = ~clk;

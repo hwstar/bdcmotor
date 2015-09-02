@@ -86,9 +86,11 @@ module pwmod(
   input [7:0] pwmval);
   
   reg pwmseo;
+  reg [7:0] pwmsyncreg;
   reg [7:0] pwmval_clipped;
   
   initial pwmseo = 0;
+  initial pwmsyncreg = 0;
   
   assign pwmseout = pwmseo;
  
@@ -96,10 +98,21 @@ module pwmod(
 		 
   always@(posedge clk) begin
 	if(pwmcount == 8'hff) begin
+	    //
+	    // New cycle, then pwm output on.
+	    // 
+	    // At the beginning of a cycle, save a copy of the pwm
+	    // value. This prevents the pwm value from changing
+	    // erratically as it is only updated when a new cycle
+	    // begins.
+		pwmsyncreg = pwmval_clipped;
 		pwmseo = 1;
 	end
 	else begin
-		if((currentlimit == 1) || (pwmcount == pwmval_clipped)) begin
+		// If current limit, or the count equals the desired
+		// duty cycle, turn the output off.
+
+		if((currentlimit == 1) || (pwmcount == pwmsyncreg)) begin
 			pwmseo = 0;
 		end
 	end
