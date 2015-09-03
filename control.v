@@ -15,7 +15,7 @@
  * MA 02110-1301, USA.
  */
  
- 
+`default_nettype none
  
 /*
 * 8 bit register
@@ -262,7 +262,24 @@ module wdregister(
 	end
 endmodule
 			
-			
+module ledctr(
+	input clk,
+	input ce,
+	output ledalive);
+	
+	reg [9:0] counter;
+	
+	assign ledalive = counter[9];
+	
+	initial counter = 0;
+	
+	always @ (posedge clk) begin
+		if(ce)
+			counter <= counter + 1;
+	end
+endmodule
+
+		
 		
 	
 	
@@ -288,6 +305,7 @@ module control(
 	output run1,
 	output run2,
 	output motorenaint,
+	output ledalive,
 	output [7:0] controlrdata,
 	output [7:0] hwconfig,
 	input clk,
@@ -431,7 +449,12 @@ module control(
 		.run2(run2),
 		.motorenaint(motorenaint),
 		.controlrdata(controlrdata));
-		
+	
+	
+	ledctr ledctr0(
+		.clk(clk),
+		.ce(ce16384),
+		.ledalive(ledalive));
 		
 	assign invphase0 = configreg0[5];
 	assign invertpwm0 = configreg0[4];

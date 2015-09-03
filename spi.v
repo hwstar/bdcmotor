@@ -15,7 +15,7 @@
  * MA 02110-1301, USA.
  * 
  */
-
+`default_nettype none
 
 //
 // This module implements a 16 bit SPI slave.

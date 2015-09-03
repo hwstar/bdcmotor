@@ -28,6 +28,9 @@ dump.vcd: dsn
 	vvp dsn
 
 route: $(PROJECT).bin
+
+prog: $(PROJECT).bin
+	sudo iceprog $(PROJECT).bin
 	
 wave: dump.vcd
 	gtkwave dump.vcd &

@@ -15,7 +15,7 @@
  * MA 02110-1301, USA.
  *
  */
- 
+`default_nettype none
  
  
 
@@ -282,6 +282,8 @@ module system(
 	output [1:0] pwm2,
 	// motor enable
 	output motorena,
+	// LED alive
+	output ledalive,
 	// spi output enable
 	output spioe,
 	// System clock
@@ -329,6 +331,12 @@ module system(
 	wire invphase0;
 	wire invphase1;
 	wire invphase2;
+	wire pwmcntce0;
+	wire pwmcntce1;
+	wire pwmcntce2;
+	wire filterce0;
+	wire filterce1;
+	wire filterce2;
 	wire run0;
 	wire run1;
 	wire run2;
@@ -457,6 +465,7 @@ module system(
 		.invphase1(invphase1),
 		.invphase2(invphase2),
 		.motorenaint(motorenaint),
+		.ledalive(ledalive),
 		.controlrdata(controlrdata),
 		.hwconfig(hwconfig));
 		

@@ -121,7 +121,7 @@
 /*
 * Top level with all I/O polarities adjusted, and tristate outputs added
 */ 
- 
+`default_nettype none
  
 module root(
 	 input clk,
@@ -138,12 +138,30 @@ module root(
 	 input [1:0] tach2,
 	 output miso,
 	 output motorena,
+	 output ledaliven,
+	 output redled0,
+	 output redled1,
+	 output redled2,
+	 output redled3,
 	 output [1:0] pwm0,
 	 output [1:0] pwm1,
 	 output [1:0] pwm2);
 	
 	wire misoi;
+	wire ledalive;
+	wire spioe;
+	wire tst;
+	wire wdogdis;
 	reg misoreg;
+	reg redledreg0;
+	reg redledreg1;
+	reg redledreg2;
+	reg redledreg3;
+	
+	initial redledreg3 = 0;
+	initial redledreg2 = 0;
+	initial redledreg1 = 0;
+	initial redledreg0 = 0;
 
 	system sys0(
     .clk(clk),
@@ -161,15 +179,21 @@ module root(
     .tach2(tach2),
     .miso(misoi),
     .motorena(motorena),
+    .ledalive(ledalive),
     .pwm0(pwm0),
     .pwm1(pwm1),
     .pwm2(pwm2));
  
+
 	
 	assign miso = misoreg;
 	assign tst = ~tstn;
 	assign wdogdis = ~wdogdisn;
-	
+	assign ledaliven = ~ledalive;
+	assign redled0 = redledreg0;
+	assign redled1 = redledreg1;
+	assign redled2 = redledreg2;
+	assign redled3 = redledreg3;
 
 	always @(*) begin
 		if(spioe)

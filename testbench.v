@@ -17,7 +17,7 @@
  */
 
 // A parallel input shift register clocked on falling edge
-
+`default_nettype none
 `timescale 10ns/1ns
 
 module tbshftout(

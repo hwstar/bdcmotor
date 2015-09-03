@@ -16,6 +16,15 @@ set_io tstn 44
 #available 45
 
 
+# Green led
+set_io ledaliven 95
+# Red led's
+set_io redled0 99
+set_io redled1 98
+set_io redled2 97
+set_io redled3 96
+
+
 # Inaccessible pins on the ICEstick
 # the last two motor channels are parked on inaccessible pins.
 

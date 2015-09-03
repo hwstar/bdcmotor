@@ -15,7 +15,7 @@
  * MA 02110-1301, USA.
  * 
  */
-
+`default_nettype none
 
 
 //
