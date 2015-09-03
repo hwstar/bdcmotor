@@ -87,17 +87,41 @@ module divby1248(
 endmodule
 
 /*
-* Fixed divide by 64 of the system clock
+* Fixed divide by 2
 */
 
-module fixeddivby64(
+module fixeddivby2(
+	input clk,
+	input cein,
+	output ceout);
+
+	reg q;
+		
+	initial q = 0;
+	
+	assign ceout = cein & q;
+
+	always @(posedge clk) begin
+		if(cein)
+			q = ~q;
+	end
+	
+endmodule
+
+
+
+/*
+* Fixed divide by 32 of the system clock
+*/
+
+module fixeddivby32(
 	input clk,
 	input cein,
 	output ceout);
 	
 	reg ceoutreg;
 	reg ceoutregs;
-	reg [5:0] counter;
+	reg [4:0] counter;
 	
 	initial ceoutreg = 0;
 	initial ceoutregs = 0;
@@ -107,7 +131,7 @@ module fixeddivby64(
 	
 	always @(*) begin
 		// Generate a ce every 64 clocks
-		if(counter == 63)
+		if(counter == 31)
 			ceoutreg <= cein;
 		else
 			ceoutreg <= 0;
@@ -324,6 +348,7 @@ module control(
 	wire [7:0] configreg2;
 	
 	wire [7:0] wdogdivreg;
+	wire ce32;
 	wire ce64;
 	wire ce16384;
 	wire cfgce0;
@@ -382,10 +407,15 @@ module control(
 		.out(configreg2));		
 		
 		
-	fixeddivby64 fdiv64(
-		.cein(tie1),
+	fixeddivby2 fdiv2(
+		.cein(ce32),
 		.clk(clk),
 		.ceout(ce64));
+		
+	fixeddivby32 fdiv32(
+		.cein(tie1),
+		.clk(clk),
+		.ceout(ce32));
 		
 	fixeddivby256 fdiv256(
 		.cein(ce64),
@@ -394,7 +424,7 @@ module control(
 		
 	divby1248 filterdiv0(
 		.clk(clk),
-		.cein(ce64),
+		.cein(ce32),
 		.divisor(configreg0[3:2]),
 		.ceout(filterce0));
 		
@@ -406,7 +436,7 @@ module control(
 
 	divby1248 filterdiv1(
 		.clk(clk),
-		.cein(ce64),
+		.cein(ce32),
 		.divisor(configreg1[3:2]),
 		.ceout(filterce1));
 		
@@ -418,7 +448,7 @@ module control(
 
 	divby1248 filterdiv2(
 		.clk(clk),
-		.cein(ce64),
+		.cein(ce32),
 		.divisor(configreg2[3:2]),
 		.ceout(filterce2));
 		

@@ -20,6 +20,7 @@
 `default_nettype none
 `timescale 10ns/1ns
 
+
 module tbshftout(
   output sout,
   input [7:0] outbyte,
@@ -228,6 +229,27 @@ module testbench;
   endtask
   
   
+  // Crude assert task
+  
+	task assert_compare_byte([7:0] actual, [7:0] expected);
+		begin
+			if(actual != expected) begin
+				$display("!!!!!************* Assertion Error in %m: is 8'h%h s/b 8'h%h *************!!!!!", actual, expected);
+				$finish;
+			end
+		end
+	endtask
+	
+	// Combine spiread and assert_compare_byte tasks
+	
+	task spiread_expect([3:0] addr, [7:0] expected);
+		begin
+			spiread(addr);
+			assert_compare_byte(inbyte, expected);
+		end
+	endtask
+  
+  
   initial begin
     $dumpvars(0, testbench);
     outbyte = 0;
@@ -256,20 +278,21 @@ module testbench;
     #100
     
     // Retrieve hardware configuration
-    spiread(4'hd);
+    spiread_expect(4'hd, 8'h30);
+  
+ 
     
-   
     // Write config register
     spiwrite(4'h2, 8'h0); 
     // Set watchdog divisor
     spiwrite(4'he, 8'h10);
      // Test lower bits of watchdog register
     spiwrite(4'hf, 8'h01);
-    spiread(4'hf);
+    spiread_expect(4'hf, 8'h01);
     spiwrite(4'hf, 8'h03);
-    spiread(4'hf);
+    spiread_expect(4'hf, 8'h03);
     spiwrite(4'hf, 8'h07);
-    spiread(4'hf);
+    spiread_expect(4'hf, 8'h07);
     
     // Enable motor
     spiwrite(4'hf,8'h0f);
@@ -277,17 +300,26 @@ module testbench;
     #10000
     // Read watchdog register
     spiread(4'hf);
+	spiread_expect(4'hf, 8'h8f);
     // Reset the watchdog
     spiwrite(4'hf,8'h80);
     // Re-enable motor
     spiwrite(4'hf,8'h0f);
     // Read watchdog register
-    spiread(4'hf);    
+    spiread_expect(4'hf, 8'h0f);    
     #20
     // Disable watchdog
 	wdogdisn = 0;
 	// Read watchdog register
     spiread(4'hf);  
+    
+    
+    tach0 = 2'b01;
+    #20000
+    spiread(4'h0);
+    spiread(4'h1);
+    #5000
+    
    
    
 	// Set pwm to 25%

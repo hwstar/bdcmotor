@@ -55,7 +55,7 @@
  * Bit 1	:	PWM clock divisor msb
  * Bit 0	:	PWM clock divisor lsb
  *
- * Tach filter bits. number of 64 cycle system clock periods to use for
+ * Tach filter bits. number of 32 cycle system clock periods to use for
  * the tach filter
  *
  *	00 - Multiply by 1
