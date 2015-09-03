@@ -249,8 +249,8 @@ module testbench;
 			assert_compare_byte(inbyte, expected);
 		end
 	endtask
-  
-  
+ 
+ 
   initial begin
     $dumpvars(0, testbench);
     outbyte = 0;
@@ -328,13 +328,85 @@ module testbench;
     spiread(4'hf);  
     
     
-    tach0 = 2'b01;
-    #20000
-    spiread(4'h0);
-    spiread(4'h1);
-    #5000
+    // Tickle tach signals
     
-   
+    // Motor channel 0
+    tach0 = 2'b01;
+    #2000
+    spiread_expect(4'h0,8'h01);
+    spiread_expect(4'h1, 8'h00);
+    tach0 = 2'b11;
+    #2000
+    spiread_expect(4'h0,8'h02);
+    spiread_expect(4'h1, 8'h00);
+    tach0 = 2'b01;
+    #2000
+    spiread_expect(4'h0,8'h01);
+    spiread_expect(4'h1, 8'h00);
+    tach0 = 2'b00;
+    #2000
+    spiread_expect(4'h0,8'h00);
+    spiread_expect(4'h1, 8'h00);
+    tach0 = 2'b10;
+    #2000
+    spiread_expect(4'h0,8'hff);
+    spiread_expect(4'h1, 8'hff);
+    tach0 = 2'b00;
+    #2000
+    spiread_expect(4'h0,8'h00);
+    spiread_expect(4'h1, 8'h00);    
+
+    // Motor channel 1
+    tach1 = 2'b01;
+    #2000
+    spiread_expect(4'h4,8'h01);
+    spiread_expect(4'h5, 8'h00);
+    tach1 = 2'b11;
+    #2000
+    spiread_expect(4'h4,8'h02);
+    spiread_expect(4'h5, 8'h00);
+    tach1 = 2'b01;
+    #2000
+    spiread_expect(4'h4,8'h01);
+    spiread_expect(4'h5, 8'h00);
+    tach1 = 2'b00;
+    #2000
+    spiread_expect(4'h4,8'h00);
+    spiread_expect(4'h5, 8'h00);
+    tach1 = 2'b10;
+    #2000
+    spiread_expect(4'h4,8'hff);
+    spiread_expect(4'h5, 8'hff);
+    tach1 = 2'b00;
+    #2000
+    spiread_expect(4'h4,8'h00);
+    spiread_expect(4'h5, 8'h00);    
+
+    // Motor channel 2
+    tach2 = 2'b01;
+    #2000
+    spiread_expect(4'h8,8'h01);
+    spiread_expect(4'h9, 8'h00);
+    tach2 = 2'b11;
+    #2000
+    spiread_expect(4'h8,8'h02);
+    spiread_expect(4'h9, 8'h00);
+    tach2 = 2'b01;
+    #2000
+    spiread_expect(4'h8,8'h01);
+    spiread_expect(4'h9, 8'h00);
+    tach2 = 2'b00;
+    #2000
+    spiread_expect(4'h8,8'h00);
+    spiread_expect(4'h9, 8'h00);
+    tach2 = 2'b10;
+    #2000
+    spiread_expect(4'h8,8'hff);
+    spiread_expect(4'h9, 8'hff);
+    tach2 = 2'b00;
+    #2000
+    spiread_expect(4'h8,8'h00);
+    spiread_expect(4'h9, 8'h00);    
    
 	// Set pwm to 25%
 	spiwrite(4'h0, 8'h40);
@@ -364,6 +436,7 @@ module testbench;
 	#100000
 	// Set the pwm to 50%
 	spiwrite(4'h8, 8'h80);	
+  
   
     #100000 $finish; 
   end
