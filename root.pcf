@@ -26,18 +26,33 @@ set_io redled3 96
 
 
 # Inaccessible pins on the ICEstick
+# The 4 bit pwm output on channel 0 and all of
 # the last two motor channels are parked on inaccessible pins.
+
+set_io pwm40[0] 120
+set_io pwm40[1] 121
+set_io pwm40[2] 122
+set_io pwm40[3] 134
+
 
 set_io pwm1[0] 23
 set_io pwm1[1] 24
 set_io tach1[0] 25
 set_io tach1[1] 26
 set_io currentlimit1 37
+set_io pwm41[0] 135
+set_io pwm41[1] 136
+set_io pwm41[2] 137
+set_io pwm41[3] 138
 
 set_io pwm2[0] 28
 set_io pwm2[1] 29
 set_io tach2[0] 31
 set_io tach2[1] 33
 set_io currentlimit2 38
+set_io pwm42[0] 141
+set_io pwm42[1] 142
+set_io pwm42[2] 143
+set_io pwm42[3] 144
 
 

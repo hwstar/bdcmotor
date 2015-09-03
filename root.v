@@ -144,8 +144,11 @@ module root(
 	 output redled2,
 	 output redled3,
 	 output [1:0] pwm0,
+	 output [3:0] pwm40,
 	 output [1:0] pwm1,
-	 output [1:0] pwm2);
+	 output [3:0] pwm41,
+	 output [1:0] pwm2,
+	 output [3:0] pwm42);
 	
 	wire misoi;
 	wire ledalive;
@@ -181,8 +184,11 @@ module root(
     .motorena(motorena),
     .ledalive(ledalive),
     .pwm0(pwm0),
+    .pwm40(pwm40),
     .pwm1(pwm1),
-    .pwm2(pwm2));
+    .pwm41(pwm41),
+    .pwm2(pwm2),
+    .pwm42(pwm42));
  
 
 	

@@ -285,8 +285,11 @@ module system(
 	output miso,
 	// motor pwm
 	output [1:0] pwm0,
+	output [3:0] pwm40,
 	output [1:0] pwm1,
+	output [3:0] pwm41,
 	output [1:0] pwm2,
+	output [3:0] pwm42,
 	// motor enable
 	output motorena,
 	// LED alive
@@ -501,7 +504,8 @@ module system(
 		.wrtdata(wrtdata),
 		.countl(countl0),
 		.counth(counth0),
-		.pwmout(pwm0));
+		.pwmout(pwm0),
+		.pwmout4(pwm40));
 		
 		
 	bdcmotorchannel bdcm1(
@@ -519,7 +523,8 @@ module system(
 		.wrtdata(wrtdata),
 		.countl(countl1),
 		.counth(counth1),
-		.pwmout(pwm1));
+		.pwmout(pwm1),
+		.pwmout4(pwm41));
 		
 		
 	bdcmotorchannel bdcm2(
@@ -537,7 +542,8 @@ module system(
 		.wrtdata(wrtdata),
 		.countl(countl2),
 		.counth(counth2),
-		.pwmout(pwm2));
+		.pwmout(pwm2),
+		.pwmout4(pwm42));
   
    
 	spi spi0(

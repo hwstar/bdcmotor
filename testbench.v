@@ -136,6 +136,9 @@ module testbench;
   wire [1:0] pwm0;
   wire [1:0] pwm1;
   wire [1:0] pwm2;
+  wire [3:0] pwm40;
+  wire [3:0] pwm41;
+  wire [3:0] pwm42;
 
   // Pull up miso so we don't get z's in the test shift register
   pullup (pull1) (miso);
@@ -178,8 +181,11 @@ module testbench;
     .miso(miso),
     .motorena(motorena),
     .pwm0(pwm0),
+    .pwm40(pwm40),
     .pwm1(pwm1),
-    .pwm2(pwm2));
+    .pwm41(pwm41),
+    .pwm2(pwm2),
+    .pwm42(pwm42));
  
  
   

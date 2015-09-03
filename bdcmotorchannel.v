@@ -31,6 +31,8 @@ module bdcmotorchannel(
 	output [7:0] counth,
     // Complmentary pwm signals out
   	output [1:0] pwmout,
+  	// 4 bit pwm signals out
+  	output [3:0] pwmout4,
     // System clock in
     input clk,
     // Clock enable for tach filter shift register
@@ -75,7 +77,8 @@ module bdcmotorchannel(
     .run(run),
     .currentlimit(currentlimit),
     .wrtdata(wrtdata),
-    .pwmout(pwmout));
+    .pwmout(pwmout),
+    .pwmout4(pwmout4));
     
   
 endmodule

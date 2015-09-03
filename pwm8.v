@@ -148,10 +148,11 @@ endmodule
 *
 * PWM output bit truth table
 *
-* 00 - Motor coast (All H-bridge drivers should be off).
-* 01 - Run CCW (Upper MOSFET driving the motor negative terminal)
-* 10 - Run CW (Upper MOSFET driving the motor positive terminal)
-* 11 - Enable dynamic braking (Lower MOSFETS on, upper MOSFETS off)
+* 2 bit	4 bit
+* 00 - 	0000	-	Motor coast (All H-bridge drivers should be off).
+* 01 -  0110	-	Run CCW (Upper MOSFET driving the motor negative terminal)
+* 10 - 	1001	-	Run CW (Upper MOSFET driving the motor positive terminal)
+* 11 - 	0101	-	Enable dynamic braking (Lower MOSFETS on, upper MOSFETS off)
 *
 * PWM flips the output bits between 01 and 10 according to the programmed
 * duty cycle. This only is allowed to happen when the motor is enabled
@@ -167,67 +168,93 @@ module deadtime(
 	input pwmin,
 	input enablepwm,
 	input run,
-	output [1:0] pwmout);
+	output [1:0] pwmout,
+	output [3:0] pwmout4);
 	
+	reg [1:0] qualifiedpwm2;
 	reg [1:0] pwmoutreg;
+	reg [3:0] pwmoutreg4;
 	
-
+	`ifdef WITH_DEADTIME
+	reg [2:0] counter = 0;
+	reg [2:0] pwmlastin = 2'b00;
+	`endif
+	
+	assign pwmout4 = pwmoutreg4;
+	assign pwmout = pwmoutreg;
+	
 	always @(*) begin
-	    if(enablepwm) begin
-		// Master enable on
+		case(pwmoutreg)
+			2'b00:
+				pwmoutreg4 <= 4'b0000;
+			
+			2'b01:
+				pwmoutreg4 <= 4'b0110;
+			
+			2'b10:
+				pwmoutreg4 <= 4'b1001;
+			
+			2'b11:
+				pwmoutreg4 <= 4'b0101;
+				
+			default:
+				pwmoutreg4 <= 4'bxxxx;
+				
+		endcase
+		
+		if(enablepwm) begin
 			if(run) begin
-				`ifndef WITH_DEADTIME
-				// No deadtime
-				pwmoutreg[0] <= pwmin;
-				pwmoutreg[1] <= ~pwmin;
-				`else
-				// Deadtime
-				if(counter != 7) begin
-					pwmoutreg[0] <= 0;
-					pwmoutreg[1] <= 0;
-				end
-				else begin
-					pwmoutreg[0] <= pwmlastin;
-					pwmoutreg[1] <= ~pwmlastin;
-				end	
-				`endif
+				qualifiedpwm2[0] <= pwmin;
+				qualifiedpwm2[1] <= ~pwmin;
 			end
 			else begin
-				// Dynamic breaking enabled
-				pwmoutreg[0] <= 1;
-				pwmoutreg[1] <= 1;
+				qualifiedpwm2[0] <= 1;
+				qualifiedpwm2[1] <= 1;
 			end
-				
 		end
-		// Master enable off
-		else begin // All motors disabled
+		else begin
 			if(run) begin
+				qualifiedpwm2[0] <= 0;
+				qualifiedpwm2[1] <= 0;
+			end
+			else begin
+				qualifiedpwm2[0] <= 1;
+				qualifiedpwm2[1] <= 1;
+			end
+		end
+		
+		`ifndef WITH_DEADTIME
+			// No deadtime
+			pwmoutreg[0] <= qualifiedpwm[0];
+			pwmoutreg[1] <= qualifiedpwm[1];
+
+		`else
+			// Deadtime
+			if(counter != 7) begin
 				pwmoutreg[0] <= 0;
 				pwmoutreg[1] <= 0;
 			end
 			else begin
-				// Dynamic breaking enabled
-				pwmoutreg[0] <= 1;
-				pwmoutreg[1] <= 1;
-			end
-		end
+				pwmoutreg[0] <= pwmlastin[0];
+				pwmoutreg[1] <= pwmlastin[1];
+			end	
+		`endif				
 	end
 	
+
 	`ifdef WITH_DEADTIME
 	// Deadtime
-	reg [2:0] counter = 0;
-	reg pwmlastin = 0;
 	always @(posedge clk) begin
 		if(counter != 7)
 			counter <= counter + 1;
-		else if(pwmin != pwmlastin) begin
+		else if(qualifiedpwm2 != pwmlastin) begin
 			counter <= 0;
-			pwmlastin <= pwmin;
+			pwmlastin <= qualifiedpwm2;
 		end
 	end
 	`endif
 	
-	assign pwmout = pwmoutreg;
+	
 endmodule
 	
 
@@ -236,6 +263,7 @@ endmodule
 
 module pwm8(
   output [1:0] pwmout,
+  output [3:0] pwmout4,
   input clk,
   input pwmcntce,
   input pwmldce,
@@ -277,7 +305,8 @@ module pwm8(
 	.pwmin(pwmcorrseout),
 	.enablepwm(enablepwm),
 	.run(run),
-	.pwmout(pwmout));
+	.pwmout(pwmout),
+	.pwmout4(pwmout4));
 	
   assign pwmcorrseout = (pwmseout ^ invertpwm);
 
