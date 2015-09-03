@@ -137,6 +137,7 @@ module testbench;
   wire [1:0] pwm1;
   wire [1:0] pwm2;
 
+  // Pull up miso so we don't get z's in the test shift register
   pullup (pull1) (miso);
   
  
@@ -281,9 +282,22 @@ module testbench;
     spiread_expect(4'hd, 8'h30);
   
  
+    // Write  motor0 config register
+    spiwrite(4'h2, 8'h01); 
+    // Write motor1 config register
+    spiwrite(4'h6, 8'h02);
+    // Write motor2 config register
+    spiwrite(4'ha, 8'h04);
+    // Read them back
+    spiread_expect(4'h2, 8'h01);
+    spiread_expect(4'h6, 8'h02); 
+    spiread_expect(4'ha, 8'h04); 
+     
+    // Set motor0,1, and 2 to 0 for other testing
+    spiwrite(4'h2, 8'h00);
+    spiwrite(4'h6, 8'h00);
+    spiwrite(4'ha, 8'h00);
     
-    // Write config register
-    spiwrite(4'h2, 8'h0); 
     // Set watchdog divisor
     spiwrite(4'he, 8'h10);
      // Test lower bits of watchdog register

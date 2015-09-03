@@ -332,6 +332,9 @@ module control(
 	output ledalive,
 	output [7:0] controlrdata,
 	output [7:0] hwconfig,
+	output [7:0] configrdreg0,
+	output [7:0] configrdreg1,
+	output [7:0] configrdreg2,
 	input clk,
 	input cfgld0,
 	input cfgld1,
@@ -342,6 +345,7 @@ module control(
 	input wdogdis,
 	input wdreset,
 	input [7:0] wrtdata);
+
 	
 	wire [7:0] configreg0;
 	wire [7:0] configreg1;
@@ -363,6 +367,12 @@ module control(
 	
 	
 	reg tie1 = 1;
+	
+	// Assign readback busses
+	
+	assign configrdreg0 = configreg0;
+	assign configrdreg1 = configreg1;
+	assign configrdreg2 = configreg2;
 	
 	
 	// Prevent config and watchdog divisor register writes when motor is enabled

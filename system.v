@@ -101,6 +101,9 @@ module decoder(
 	input [7:0] counthfrozen2,
 	input [7:0] controlrdata,
 	input [7:0] hwconfig,
+	input [7:0] configrdreg0,
+	input [7:0] configrdreg1,
+	input [7:0] configrdreg2,
 	output [7:0] rddata,
 	output countlread0,
 	output pwmld0,
@@ -186,8 +189,10 @@ module decoder(
 			end
 			    
 			// Channel 0 Configuration
-			4'h2:
+			4'h2: begin
 				regdecw2 <= we;
+				rddatareg <= configrdreg0;
+			end
 				
 			// Channel 1 Tach low byte and PWM
 			4'h4: begin
@@ -201,9 +206,10 @@ module decoder(
 			end
 			    
 			// Channel 1 Configuration
-			4'h6:
+			4'h6: begin
 				regdecw6 <= we;
-
+				rddatareg <= configrdreg1;
+			end
 				
 			// Channel 2 Tach low byte and PWM
 			4'h8: begin
@@ -217,9 +223,10 @@ module decoder(
 			end
 			    
 			// Channel 2 Configuration
-			4'ha:
-				regdecwa <= we;     
-      
+			4'ha: begin
+				regdecwa <= we;   
+				rddatareg <= configrdreg2;  
+			end
       
 			// Unimplemented decodes
 			4'h3, 4'h7,
@@ -350,12 +357,15 @@ module system(
 	wire [7:0] counthfrozen0;
 	wire [7:0] countl0;
 	wire [7:0] counth0;
+	wire [7:0] configrdreg0;
 	wire [7:0] counthfrozen1;
 	wire [7:0] countl1;
 	wire [7:0] counth1;
+	wire [7:0] configrdreg1;
 	wire [7:0] counthfrozen2;
 	wire [7:0] countl2;
 	wire [7:0] counth2;
+	wire [7:0] configrdreg2;
 	wire [3:0] addr;
 	wire [7:0] wrtdata;
 	wire [7:0] rddata;
@@ -379,10 +389,13 @@ module system(
 		.addr(addr),
 		.countl0(countl0),
 		.counthfrozen0(counthfrozen0),
+		.configrdreg0(configrdreg0),
 		.countl1(countl1),
 		.counthfrozen1(counthfrozen1),
+		.configrdreg1(configrdreg1),
 		.countl2(countl2),
 		.counthfrozen2(counthfrozen2),
+		.configrdreg2(configrdreg2),
 		.controlrdata(controlrdata),
 		.hwconfig(hwconfig),
 		.rddata(rddata),
@@ -467,7 +480,10 @@ module system(
 		.motorenaint(motorenaint),
 		.ledalive(ledalive),
 		.controlrdata(controlrdata),
-		.hwconfig(hwconfig));
+		.hwconfig(hwconfig),
+		.configrdreg0(configrdreg0),
+		.configrdreg1(configrdreg1),
+		.configrdreg2(configrdreg2));
 		
 		 
 	bdcmotorchannel bdcm0(
