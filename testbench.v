@@ -205,16 +205,16 @@ module testbench;
   
   task spiwrite([3:0] addr, [7:0] data);
     begin
-    	#40 ssn = 0;
-    	#40 ssn = 0;
+    	#80 ssn = 0;
+    	#80 ssn = 0;
     	begin
     	outbyte = {1'b0, addr, 3'b0};
       	spiclkburst;
-        #40 outbyte = data;
+        #80 outbyte = data;
         spiclkburst;
     	end
-    	#40 ssn = 0;
-    	#40 ssn = 1;
+    	#80 ssn = 0;
+    	#80 ssn = 1;
     end  
   endtask
 
@@ -222,16 +222,16 @@ module testbench;
   
   task spiread([3:0] addr);
     begin
-    	#40 ssn = 0;
-    	#40 ssn = 0;
+    	#80 ssn = 0;
+    	#80 ssn = 0;
     	begin
         outbyte = {1'b1, addr, 3'b0};
       	spiclkburst;
-        #40 outbyte = 8'h00;
+        #80 outbyte = 8'h00;
         spiclkburst;
     	end
-    	#40 ssn = 0;
-    	#40 ssn = 1;
+    	#80 ssn = 0;
+    	#80 ssn = 1;
     end  
   endtask
   
@@ -278,10 +278,17 @@ module testbench;
 	
 	
     // Clear any pending SPI transaction
-    #40
+    #80
     spiclkburst;
-    #40
+    #80
     spiclkburst;
+    #100
+    // Test async reset
+    ssn = 0;
+    #20
+    spiclkburst;
+    #20
+    ssn = 1;
     #100
     
     // Retrieve hardware configuration

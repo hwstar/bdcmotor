@@ -357,6 +357,7 @@ module system(
 	wire wdogdivld;
 	wire motorenaint;
 	wire wdreset;
+	wire spien_filt;
 	wire [7:0] counthfrozen0;
 	wire [7:0] countl0;
 	wire [7:0] counth0;
@@ -544,7 +545,12 @@ module system(
 		.counth(counth2),
 		.pwmout(pwm2),
 		.pwmout4(pwm42));
-  
+		
+	digitalfilter spienfilter(
+		.out(spien_filt),
+		.clk(clk),
+		.ce(1'b1),
+		.in(ss));
    
 	spi spi0(
 		.spidout(miso),
@@ -554,7 +560,7 @@ module system(
 		.spioe(spioe),
 		.wrtdata(wrtdata),
 		.addr(addr),
-		.spien(ss),
+		.spien(spien_filt),
 		.spidin(mosi),
 		.rddata(rddata));
 

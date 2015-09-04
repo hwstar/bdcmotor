@@ -84,7 +84,8 @@ module spiclkcounter(
   
   assign clkcount = countreg;
   
-  always @(posedge clk) begin
+  // en is async
+  always @(posedge clk, negedge en) begin
     if(en)
     	countreg <= countreg + 1;
     else
