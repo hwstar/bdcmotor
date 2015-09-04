@@ -68,14 +68,14 @@ endmodule
 module tbclkctr(
   output [2:0] cycle,
   input clk,
-  input en);
+  input enn);
   
   reg [2:0] register = 3'b000;
   
   assign cycle = register;
   
   always @(posedge clk) begin
-    if(en)
+    if(!enn)
     	register <= register + 1;
     else
       register = 0;
@@ -111,7 +111,7 @@ endmodule
 module testbench;
   
   reg sclk;
-  reg ss;
+  reg ssn;
   reg clk;
   reg currentlimit0;
   reg currentlimit1;
@@ -146,7 +146,7 @@ module testbench;
  
   tbclkctr tbcc0(
     .clk(sclk),
-    .en(ss),
+    .enn(ssn),
     .cycle(cycle));
   
   tbseq tbs0(
@@ -168,7 +168,7 @@ module testbench;
   root root0(
     .clk(clk),
     .sclk(sclk),
-    .ss(ss),
+    .ssn(ssn),
     .mosi(mosi),
     .tstn(tstn),
     .wdogdisn(wdogdisn),
@@ -205,16 +205,16 @@ module testbench;
   
   task spiwrite([3:0] addr, [7:0] data);
     begin
-    	#40 ss = 1;
-    	#40 ss = 1;
+    	#40 ssn = 0;
+    	#40 ssn = 0;
     	begin
     	outbyte = {1'b0, addr, 3'b0};
       	spiclkburst;
         #40 outbyte = data;
         spiclkburst;
     	end
-    	#40 ss = 1;
-    	#40 ss = 0;
+    	#40 ssn = 0;
+    	#40 ssn = 1;
     end  
   endtask
 
@@ -222,16 +222,16 @@ module testbench;
   
   task spiread([3:0] addr);
     begin
-    	#40 ss = 1;
-    	#40 ss = 1;
+    	#40 ssn = 0;
+    	#40 ssn = 0;
     	begin
         outbyte = {1'b1, addr, 3'b0};
       	spiclkburst;
         #40 outbyte = 8'h00;
         spiclkburst;
     	end
-    	#40 ss = 1;
-    	#40 ss = 0;
+    	#40 ssn = 0;
+    	#40 ssn = 1;
     end  
   endtask
   
@@ -260,7 +260,7 @@ module testbench;
   initial begin
     $dumpvars(0, testbench);
     outbyte = 0;
-    ss = 0;
+    ssn = 1;
     sclk = 0;
     clk = 0;
     currentlimit0 = 0;

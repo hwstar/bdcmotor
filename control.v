@@ -130,7 +130,7 @@ module fixeddivby32(
 	assign ceout = ceoutregs;
 	
 	always @(*) begin
-		// Generate a ce every 64 clocks
+		// Generate a ce every 32 clocks
 		if(counter == 31)
 			ceoutreg <= cein;
 		else

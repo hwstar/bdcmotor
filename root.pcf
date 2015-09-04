@@ -3,7 +3,7 @@ set_io clk 21
 set_io sclk 112
 set_io mosi 113
 set_io miso 114
-set_io ss 115
+set_io ssn 115
 set_io wdogdisn 117
 set_io pwm0[0] 62
 set_io pwm0[1] 61

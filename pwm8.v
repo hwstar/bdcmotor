@@ -64,7 +64,7 @@ module pwmregister(
   
   reg [7:0] pwmreg;
   
-  initial pwmreg = 8'h80;
+  initial pwmreg = 8'h00;
   
   assign pwmval = pwmreg;
   

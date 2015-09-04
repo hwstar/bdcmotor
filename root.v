@@ -126,7 +126,7 @@
 module root(
 	 input clk,
 	 input sclk,
-	 input ss,
+	 input ssn,
 	 input mosi,
 	 input tstn,
 	 input wdogdisn,
@@ -153,6 +153,7 @@ module root(
 	wire misoi;
 	wire ledalive;
 	wire spioe;
+	wire ss;
 	wire tst;
 	wire wdogdis;
 	reg misoreg;
@@ -194,6 +195,7 @@ module root(
 	
 	assign miso = misoreg;
 	assign tst = ~tstn;
+	assign ss = ~ssn;
 	assign wdogdis = ~wdogdisn;
 	assign ledaliven = ~ledalive;
 	assign redled0 = redledreg0;
