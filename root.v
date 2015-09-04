@@ -157,15 +157,10 @@ module root(
 	wire tst;
 	wire wdogdis;
 	reg misoreg;
-	reg redledreg0;
-	reg redledreg1;
-	reg redledreg2;
-	reg redledreg3;
+	reg redledreg1 = 0;
+	reg redledreg2 = 0;
+	reg redledreg3 = 0;
 	
-	initial redledreg3 = 0;
-	initial redledreg2 = 0;
-	initial redledreg1 = 0;
-	initial redledreg0 = 0;
 
 	system sys0(
     .clk(clk),
@@ -198,7 +193,7 @@ module root(
 	assign ss = ~ssn;
 	assign wdogdis = ~wdogdisn;
 	assign ledaliven = ~ledalive;
-	assign redled0 = redledreg0;
+	assign redled0 = motorena;
 	assign redled1 = redledreg1;
 	assign redled2 = redledreg2;
 	assign redled3 = redledreg3;

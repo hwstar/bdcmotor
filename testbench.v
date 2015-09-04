@@ -130,6 +130,7 @@ module testbench;
   wire sold;
   wire spioe;
   wire motorena;
+  wire redled0;
  
   wire [2:0] cycle;
   wire [7:0] inbyte;
@@ -180,6 +181,7 @@ module testbench;
     .tach2(tach2),
     .miso(miso),
     .motorena(motorena),
+    .redled0(redled0),
     .pwm0(pwm0),
     .pwm40(pwm40),
     .pwm1(pwm1),

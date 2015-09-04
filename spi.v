@@ -31,9 +31,7 @@ module spirdshft(
   input clk,
   input en);
   
-  reg [7:0] doutregister;
-  
-  initial doutregister = 8'h00;
+  reg [7:0] doutregister = 8'h00;
   
   assign dout = doutregister;
   
@@ -54,9 +52,7 @@ module spiwrshft(
   input rdld,
   input clk);
   
-  reg [7:0] dinregister;
-  
-  initial dinregister = 8'h00;
+  reg [7:0] dinregister = 8'h00;
   
   assign out = dinregister[7];
  
@@ -78,9 +74,7 @@ module spiclkcounter(
   input clk,
   input en);
   
-  reg [3:0] countreg;
-  
-  initial countreg = 0;
+  reg [3:0] countreg = 0;
   
   assign clkcount = countreg;
   
@@ -102,9 +96,8 @@ module addrregister(
   input din,
   input en);
   
-  reg [3:0] addrreg;
-  
-  initial addrreg = 0;
+  reg [3:0] addrreg = 0;
+
   
   assign addr = addrreg;
   

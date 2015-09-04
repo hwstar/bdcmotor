@@ -41,9 +41,8 @@ module pwmcounter(
   input clk,
   input pwmcntce);
   
-  reg [7:0] counter;
-  initial counter = 8'h00;
-  
+  reg [7:0] counter = 0;
+ 
   assign pwmcount = counter;
   
   always @(posedge clk) begin
@@ -62,9 +61,7 @@ module pwmregister(
   input pwmldce,
   input [7:0] wrtdata);
   
-  reg [7:0] pwmreg;
-  
-  initial pwmreg = 8'h00;
+  reg [7:0] pwmreg = 8'h00;
   
   assign pwmval = pwmreg;
   
@@ -85,12 +82,10 @@ module pwmod(
   input [7:0] pwmcount,
   input [7:0] pwmval);
   
-  reg pwmseo;
-  reg [7:0] pwmsyncreg;
+  reg pwmseo = 0;
+  reg [7:0] pwmsyncreg = 0;
   reg [7:0] pwmval_clipped;
   
-  initial pwmseo = 0;
-  initial pwmsyncreg = 0;
   
   assign pwmseout = pwmseo;
  

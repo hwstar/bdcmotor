@@ -119,13 +119,9 @@ module fixeddivby32(
 	input cein,
 	output ceout);
 	
-	reg ceoutreg;
-	reg ceoutregs;
-	reg [4:0] counter;
-	
-	initial ceoutreg = 0;
-	initial ceoutregs = 0;
-	initial counter = 0;
+	reg ceoutreg = 0;
+	reg ceoutregs = 0;
+	reg [4:0] counter = 0;
 	
 	assign ceout = ceoutregs;
 	
@@ -154,13 +150,10 @@ module fixeddivby256(
 	input cein,
 	output ceout);
 	
-	reg ceoutreg;
-	reg ceoutregs;
-	reg [7:0] counter;
+	reg ceoutreg = 0;
+	reg ceoutregs = 0;
+	reg [7:0] counter = 0;
 	
-	initial ceoutreg = 0;
-	initial ceoutregs = 0;
-	initial counter = 0;
 	
 	assign ceout = ceoutregs;
 	
@@ -196,15 +189,11 @@ module wdtimer(
 	input [7:0] wdogdivreg,
 	output wdtripce);
 	
-	reg [7:0] counter;
-	reg wdtripcesreg;
-	reg wdtripcereg;
-	reg wdogdisreg;
+	reg [7:0] counter = 0;
+	reg wdtripcesreg = 0;
+	reg wdtripcereg = 0;
+	reg wdogdisreg = 0;
 	
-	initial counter = 0;
-	initial wdtripcesreg = 0;
-	initial wdtripcereg = 0;
-	initial wdogdisreg = 0;
 	
 	assign wdtripce = wdtripcesreg;
 	
@@ -248,15 +237,11 @@ module wdregister(
 	output run2,
 	output [7:0] controlrdata);
 	
-	reg motorenaintreg;
-	reg wdtrip;
-	reg [7:0] controlreg;
+	reg motorenaintreg = 0;
+	reg wdtrip = 0;
+	reg [7:0] controlreg = 0;
 	reg [7:0] controlrdatareg;
-	
-	initial motorenaintreg = 0;
-	initial wdtrip = 0;
-	initial controlreg = 0;
-	
+
 	
 	assign motorenaint = motorenaintreg;
 	assign run0 = controlreg[0];
@@ -291,11 +276,10 @@ module ledctr(
 	input ce,
 	output ledalive);
 	
-	reg [9:0] counter;
+	reg [9:0] counter = 0;
 	
 	assign ledalive = counter[9];
 	
-	initial counter = 0;
 	
 	always @ (posedge clk) begin
 		if(ce)
